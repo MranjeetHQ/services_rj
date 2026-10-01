@@ -20,7 +20,7 @@ void main() {
       'legacy_int': 7,
     });
     await AppController.initialize(
-      features: const AppFeatures(network: false, connectivity: false),
+      features: const AppFeatures(sharedPref: true, encryption: true),
       encryptionKeyProvider: () async => key(0),
     );
     raw = await SharedPreferences.getInstance();
@@ -65,34 +65,46 @@ void main() {
   });
 
   group('SharedPrefManager with encryption', () {
-    test('every supported type round-trips and is stored encrypted', () async {
-      final values = <String, dynamic>{
-        's': 'secret',
-        'i': 42,
-        'd': 3.5,
-        'b': true,
-        'l': ['a', 'b'],
-        'm': {'id': 1, 'name': 'Ranjit'},
-      };
-      for (final e in values.entries) {
-        expect(await SharedPrefManager.saveData('t_${e.key}', e.value), isTrue);
+    test(
+      'every supported type round-trips and is stored encrypted',
+      () async {
+        final values = <String, dynamic>{
+          's': 'secret',
+          'i': 42,
+          'd': 3.5,
+          'b': true,
+          'l': ['a', 'b'],
+          'm': {'id': 1, 'name': 'Ranjit'},
+        };
+        for (final e in values.entries) {
+          expect(
+            await SharedPrefManager.saveData('t_${e.key}', e.value),
+            isTrue,
+          );
+          expect(
+            AppEncryption.isEncrypted(raw.get('t_${e.key}')),
+            isTrue,
+            reason: e.key,
+          );
+        }
+        expect(SharedPrefManager.getData<String>('t_s'), 'secret');
+        expect(SharedPrefManager.getData<int>('t_i'), 42);
+        expect(SharedPrefManager.getData<double>('t_d'), 3.5);
+        expect(SharedPrefManager.getData<bool>('t_b'), true);
+        expect(SharedPrefManager.getData<List<String>>('t_l'), [
+          'a',
+          'b',
+        ]);
         expect(
-          AppEncryption.isEncrypted(raw.get('t_${e.key}')),
-          isTrue,
-          reason: e.key,
+          SharedPrefManager.getData<Map<String, dynamic>>('t_m'),
+          {'id': 1, 'name': 'Ranjit'},
         );
-      }
-      expect(SharedPrefManager.getData<String>('t_s'), 'secret');
-      expect(SharedPrefManager.getData<int>('t_i'), 42);
-      expect(SharedPrefManager.getData<double>('t_d'), 3.5);
-      expect(SharedPrefManager.getData<bool>('t_b'), true);
-      expect(SharedPrefManager.getData<List<String>>('t_l'), ['a', 'b']);
-      expect(SharedPrefManager.getData<Map<String, dynamic>>('t_m'), {
-        'id': 1,
-        'name': 'Ranjit',
-      });
-      expect((raw.get('t_s') as String).contains('secret'), isFalse);
-    });
+        expect(
+          (raw.get('t_s') as String).contains('secret'),
+          isFalse,
+        );
+      },
+    );
 
     test('whole-number doubles keep their type', () async {
       await SharedPrefManager.saveData('t_d2', 2.0);
@@ -109,7 +121,10 @@ void main() {
     });
 
     test('plain values written before encryption still read', () {
-      expect(SharedPrefManager.getData<String>('legacy_plain'), 'hello');
+      expect(
+        SharedPrefManager.getData<String>('legacy_plain'),
+        'hello',
+      );
       expect(SharedPrefManager.getData<int>('legacy_int'), 7);
     });
 
@@ -120,20 +135,34 @@ void main() {
           keys: {'legacy_plain', 'legacy_int'},
         );
         expect(count, 2);
-        expect(AppEncryption.isEncrypted(raw.get('legacy_plain')), isTrue);
-        expect(SharedPrefManager.getData<String>('legacy_plain'), 'hello');
+        expect(
+          AppEncryption.isEncrypted(raw.get('legacy_plain')),
+          isTrue,
+        );
+        expect(
+          SharedPrefManager.getData<String>('legacy_plain'),
+          'hello',
+        );
         expect(SharedPrefManager.getData<int>('legacy_int'), 7);
         expect(
-          await SharedPrefManager.migrateToEncrypted(keys: {'legacy_plain'}),
+          await SharedPrefManager.migrateToEncrypted(
+            keys: {'legacy_plain'},
+          ),
           0,
         );
       },
     );
 
-    test('unreadable value returns null instead of crashing', () async {
-      await raw.setString('broken', '${AppEncryption.marker}not-base64!!');
-      expect(SharedPrefManager.getData<String>('broken'), isNull);
-    });
+    test(
+      'unreadable value returns null instead of crashing',
+      () async {
+        await raw.setString(
+          'broken',
+          '${AppEncryption.marker}not-base64!!',
+        );
+        expect(SharedPrefManager.getData<String>('broken'), isNull);
+      },
+    );
 
     test('theme mode persists through encrypted prefs', () async {
       await AppThemeController.instance.setThemeMode(ThemeMode.dark);
@@ -145,11 +174,14 @@ void main() {
       expect(AppThemeController.instance.themeMode, ThemeMode.dark);
     });
 
-    test('with encryption switched off values are stored plain', () async {
-      crypto.enabled = false;
-      await SharedPrefManager.saveData('t_plain', 'visible');
-      expect(raw.get('t_plain'), 'visible');
-      crypto.enabled = true;
-    });
+    test(
+      'with encryption switched off values are stored plain',
+      () async {
+        crypto.enabled = false;
+        await SharedPrefManager.saveData('t_plain', 'visible');
+        expect(raw.get('t_plain'), 'visible');
+        crypto.enabled = true;
+      },
+    );
   });
 }

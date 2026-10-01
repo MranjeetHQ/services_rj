@@ -2,17 +2,15 @@
 
 ## AppController
 
-`AppController` is the single switchboard for the package. Every feature is on by default. Switch features off in `main()`:
+`AppController` is the single switchboard for the package. Features are off by default; enable only what the app uses:
 
 ```dart
 await AppController.initialize(
-  apiConfig: const ApiConfig(baseUrl: 'https://api.example.com'),
-  features: const AppFeatures(
-    networkLogs: false,  // everything else stays on
-  ),
-  cacheConfig: const CacheConfig(defaultTtl: Duration(minutes: 10)),
+  features: const AppFeatures(sharedPref: true, theme: true),
 );
 ```
+
+Networking is optional. Add `network: true` and an `ApiConfig` only when making API requests; without a config the network feature stays unready and other enabled features continue initializing.
 
 | Feature | What it controls | Can change at runtime |
 |---|---|---|

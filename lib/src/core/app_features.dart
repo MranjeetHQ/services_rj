@@ -41,29 +41,30 @@ const Set<AppFeature> runtimeToggleableFeatures = {
   AppFeature.permissions,
 };
 
-/// Declares which features the app uses. Every feature is enabled by default.
+/// Declares which features the app uses. Features are opt-in and disabled by
+/// default.
 ///
 /// ```dart
-/// // Everything on (default)
+/// // Nothing starts unless selected.
 /// const AppFeatures();
 ///
-/// // Everything except encryption
-/// const AppFeatures(encryption: false);
+/// // Enable only the features this app uses.
+/// const AppFeatures(sharedPref: true, theme: true);
 ///
 /// // Only the features listed
 /// AppFeatures.only({AppFeature.sharedPref, AppFeature.theme});
 /// ```
 class AppFeatures {
   const AppFeatures({
-    this.sharedPref = true,
-    this.theme = true,
-    this.network = true,
-    this.apiCache = true,
-    this.encryption = true,
-    this.connectivity = true,
-    this.logger = true,
-    this.networkLogs = true,
-    this.permissions = true,
+    this.sharedPref = false,
+    this.theme = false,
+    this.network = false,
+    this.apiCache = false,
+    this.encryption = false,
+    this.connectivity = false,
+    this.logger = false,
+    this.networkLogs = false,
+    this.permissions = false,
   });
 
   /// Every feature disabled.

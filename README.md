@@ -60,18 +60,9 @@ import 'package:services_rj/services_rj.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Every feature is on by default: storage, encryption, theme, network,
-  // offline cache, connectivity, logging and permissions.
+  // Features are opt-in. This app uses preferences and theme state.
   await AppController.initialize(
-    apiConfig: ApiConfig(
-      baseUrl: 'https://jsonplaceholder.typicode.com',
-      printLogs: true,           // ← enable console logs
-      connectTimeout: 15000,
-      receiveTimeout: 15000,
-      sendTimeout: 15000,
-    ),
-    // Switch off what you don't need, e.g.:
-    // features: const AppFeatures(permissions: false),
+    features: const AppFeatures(sharedPref: true, theme: true),
   );
 
   runApp(const MyApp());
@@ -140,8 +131,11 @@ Holds all network‑related configuration:
 Singleton that initialises and manages the Dio instance.
 
 ```dart
-// Initialisation (done automatically by AppInitializer)
-DioService.instance.initialize(config);
+// Opt in to networking during app initialization.
+await AppController.initialize(
+  features: const AppFeatures(network: true),
+  apiConfig: config,
+);
 
 // Access the Dio instance
 final response = await DioService.instance.dio.get('/posts');

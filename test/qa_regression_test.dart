@@ -75,7 +75,16 @@ void main() {
     FlutterSecureStorage.setMockInitialValues({});
     dir = await Directory.systemTemp.createTemp('services_rj_qa');
     await AppController.initialize(
-      features: const AppFeatures(connectivity: false),
+      features: const AppFeatures(
+        sharedPref: true,
+        theme: true,
+        network: true,
+        apiCache: true,
+        encryption: true,
+        logger: true,
+        networkLogs: true,
+        permissions: true,
+      ),
       apiConfig: const ApiConfig(baseUrl: 'https://qa.test'),
       cacheDirectory: dir,
     );
@@ -110,7 +119,9 @@ void main() {
       await AppController.instance.logout();
 
       http.body = jsonEncode({'user': 'B'});
-      final userB = api.request(req); // user B must not join A's request
+      final userB = api.request(
+        req,
+      ); // user B must not join A's request
 
       expect((await userA).data, {'user': 'A'});
       expect((await userB).data, {'user': 'B'});
@@ -150,22 +161,36 @@ void main() {
       ..status = 204
       ..body = '';
     final res = await api.request(
-      const ApiRequest(endpoint: '/items/1', method: ApiMethod.delete),
+      const ApiRequest(
+        endpoint: '/items/1',
+        method: ApiMethod.delete,
+      ),
     );
     expect(res.success, isTrue);
     expect(res.statusCode, 204);
   });
 
-  test('QA-4: a plain-text error body gives a clean ApiException', () async {
-    http
-      ..status = 500
-      ..body = 'Internal Server Error'
-      ..contentType = 'text/plain';
-    await expectLater(
-      api.request(const ApiRequest(endpoint: '/boom', method: ApiMethod.post)),
-      throwsA(isA<ApiException>().having((e) => e.statusCode, 'status', 500)),
-    );
-  });
+  test(
+    'QA-4: a plain-text error body gives a clean ApiException',
+    () async {
+      http
+        ..status = 500
+        ..body = 'Internal Server Error'
+        ..contentType = 'text/plain';
+      await expectLater(
+        api.request(
+          const ApiRequest(endpoint: '/boom', method: ApiMethod.post),
+        ),
+        throwsA(
+          isA<ApiException>().having(
+            (e) => e.statusCode,
+            'status',
+            500,
+          ),
+        ),
+      );
+    },
+  );
 
   test(
     'QA-5: settings that never take the app to background do not block the queue',
@@ -206,58 +231,82 @@ void main() {
       },
     );
 
-    test('QA-7: concurrent initialize creates exactly one key', () async {
-      crypto.reset();
-      FlutterSecureStorage.setMockInitialValues({});
-      await Future.wait([
-        crypto.initialize(),
-        crypto.initialize(),
-        crypto.initialize(),
-      ]);
-      final c = crypto.encrypt('same key');
-      final stored = await const FlutterSecureStorage().read(
-        key: 'services_rj_data_key_v1',
-      );
-      crypto.reset();
-      await crypto.initialize(keyProvider: () async => base64Decode(stored!));
-      expect(crypto.decrypt(c), 'same key');
-    });
+    test(
+      'QA-7: concurrent initialize creates exactly one key',
+      () async {
+        crypto.reset();
+        FlutterSecureStorage.setMockInitialValues({});
+        await Future.wait([
+          crypto.initialize(),
+          crypto.initialize(),
+          crypto.initialize(),
+        ]);
+        final c = crypto.encrypt('same key');
+        final stored = await const FlutterSecureStorage().read(
+          key: 'services_rj_data_key_v1',
+        );
+        crypto.reset();
+        await crypto.initialize(
+          keyProvider: () async => base64Decode(stored!),
+        );
+        expect(crypto.decrypt(c), 'same key');
+      },
+    );
 
-    test('QA-8: wipeAllData keeps using the custom key provider', () async {
-      crypto.reset();
-      var calls = 0;
-      final key = Uint8List.fromList(List.filled(32, 7));
-      await crypto.initialize(
-        keyProvider: () async {
-          calls++;
-          return key;
-        },
-      );
-      await AppController.instance.wipeAllData(destroyEncryptionKey: true);
-      expect(calls, 2);
-      expect(crypto.isInitialized, isTrue);
-    });
+    test(
+      'QA-8: wipeAllData keeps using the custom key provider',
+      () async {
+        crypto.reset();
+        var calls = 0;
+        final key = Uint8List.fromList(List.filled(32, 7));
+        await crypto.initialize(
+          keyProvider: () async {
+            calls++;
+            return key;
+          },
+        );
+        await AppController.instance.wipeAllData(
+          destroyEncryptionKey: true,
+        );
+        expect(calls, 2);
+        expect(crypto.isInitialized, isTrue);
+      },
+    );
   });
 
   test(
     'QA-9: enabling the cache at runtime uses the CacheConfig from initialize',
     () async {
       AppController.instance.resetForTest();
-      final dir2 = await Directory.systemTemp.createTemp('services_rj_qa9');
+      final dir2 = await Directory.systemTemp.createTemp(
+        'services_rj_qa9',
+      );
       await AppController.initialize(
         features: const AppFeatures(
+          network: true,
           apiCache: false,
           connectivity: false,
           encryption: false,
         ),
         apiConfig: const ApiConfig(baseUrl: 'https://qa.test'),
-        cacheConfig: const CacheConfig(defaultTtl: Duration(hours: 6)),
+        cacheConfig: const CacheConfig(
+          defaultTtl: Duration(hours: 6),
+        ),
         cacheDirectory: dir2,
       );
-      expect(AppController.instance.isReady(AppFeature.apiCache), isFalse);
+      expect(
+        AppController.instance.isReady(AppFeature.apiCache),
+        isFalse,
+      );
 
-      await AppController.instance.setEnabled(AppFeature.apiCache, true);
-      expect(AppController.instance.isReady(AppFeature.apiCache), isTrue);
+      await AppController.instance.setEnabled(
+        AppFeature.apiCache,
+        true,
+      );
+      expect(
+        AppController.instance.isReady(AppFeature.apiCache),
+        isTrue,
+      );
       expect(cache.config.defaultTtl, const Duration(hours: 6));
       await cache.flush();
       await dir2.delete(recursive: true);

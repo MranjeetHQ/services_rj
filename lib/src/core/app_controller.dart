@@ -19,13 +19,13 @@ import 'shared_pref_manager.dart';
 
 /// Single place that controls every functionality of `services_rj`.
 ///
-/// Call [initialize] once in `main()`. Every feature is enabled by default;
-/// pass [AppFeatures] to switch any of them off.
+/// Call [initialize] once in `main()`. Features are disabled by default;
+/// pass [AppFeatures] to enable only the functionality the app uses.
 ///
 /// ```dart
 /// await AppController.initialize(
 ///   apiConfig: ApiConfig(baseUrl: 'https://api.example.com'),
-///   features: const AppFeatures(networkLogs: false),
+///   features: const AppFeatures(network: true, apiCache: true),
 ///   cacheConfig: const CacheConfig(defaultTtl: Duration(minutes: 10)),
 /// );
 ///
@@ -89,7 +89,9 @@ class AppController extends ChangeNotifier {
     required Directory? cacheDirectory,
   }) async {
     if (_isInitialized) {
-      AppLogger.warning('AppController.initialize() called twice; ignoring.');
+      AppLogger.warning(
+        'AppController.initialize() called twice; ignoring.',
+      );
       return;
     }
 
@@ -150,7 +152,10 @@ class AppController extends ChangeNotifier {
         _ready.add(AppFeature.apiCache);
       } catch (e, st) {
         // The app keeps working without a cache; requests go to the network.
-        AppLogger.error('API cache could not start: $e', stackTrace: st);
+        AppLogger.error(
+          'API cache could not start: $e',
+          stackTrace: st,
+        );
       }
     }
 
@@ -213,12 +218,14 @@ class AppController extends ChangeNotifier {
               directoryOverride: _cacheDirectory,
             );
           }
-          if (ApiCacheManager.instance.isInitialized) _ready.add(feature);
+          if (ApiCacheManager.instance.isInitialized)
+            _ready.add(feature);
         case AppFeature.logger:
         case AppFeature.permissions:
           _ready.add(feature);
         case AppFeature.networkLogs:
-          if (_ready.contains(AppFeature.network)) _ready.add(feature);
+          if (_ready.contains(AppFeature.network))
+            _ready.add(feature);
         default:
           break;
       }
@@ -283,14 +290,17 @@ class AppController extends ChangeNotifier {
 
   /// Deletes all data this package stored: preferences, the API cache and,
   /// when [destroyEncryptionKey] is true, the encryption key itself.
-  Future<void> wipeAllData({bool destroyEncryptionKey = false}) async {
+  Future<void> wipeAllData({
+    bool destroyEncryptionKey = false,
+  }) async {
     if (ApiCacheManager.instance.isInitialized) {
       await ApiCacheManager.instance.clear();
     }
     if (SharedPrefManager.isInitialized) {
       await SharedPrefManager.clearAllSharedPrefData();
     }
-    if (destroyEncryptionKey && AppEncryption.instance.isInitialized) {
+    if (destroyEncryptionKey &&
+        AppEncryption.instance.isInitialized) {
       await AppEncryption.instance.destroyKey();
       await AppEncryption.instance.initialize();
     }
