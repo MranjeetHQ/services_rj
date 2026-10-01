@@ -1,8 +1,8 @@
 # services_rj
 
-A Flutter utility package that provides out‑of‑the‑box support for **networking** with **offline caching**, **encrypted storage**, **runtime permissions**, **theming**, **button widgets**, **shared preferences**, and common app‑level helpers. One `AppController` switches every feature on or off.
+A Flutter utility package that provides out‑of‑the‑box support for **networking** with **offline caching**, **encrypted storage**, **runtime permissions**, **JSON-driven dynamic forms**, **theming**, **button widgets**, **shared preferences**, and common app‑level helpers. One `AppController` switches every feature on or off.
 
-**Guides:** [AppController, caching and encryption](docs/app_controller.md) · [Permissions](docs/permissions.md) · [QA report](docs/qa_report.md)
+**Guides:** [AppController, caching and encryption](docs/app_controller.md) · [Permissions](docs/permissions.md) · [Dynamic forms](docs/forms.md) · [Form guide website](form_guide_web/) · [QA report](docs/qa_report.md)
 
 ---
 
@@ -30,6 +30,7 @@ A Flutter utility package that provides out‑of‑the‑box support for **netwo
     - [AppInitializer](#appinitializer)
     - [SharedPrefManager](#sharedprefmanager)
     - [Other Helpers](#other-helpers)
+  - [5. Dynamic Forms](#5-dynamic-forms)
 - [Example](#example)
 
 ---
@@ -40,7 +41,7 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  services_rj: ^1.1.0
+  services_rj: ^1.2.0
 ```
 
 Then run:
@@ -526,6 +527,62 @@ final score = SharedPrefManager.getData<int>('score');
 | `app_connectivity.dart`| Network connectivity checker                      |
 | `app_extensions.dart`  | Common Dart / Flutter extensions                  |
 | `widgets/`             | `AppScaffold`, `PrimaryLoader`, `ThemeModeSwitcher` |
+
+---
+
+### 5. Dynamic Forms
+
+Build complete forms from JSON — 53 field types, validation, conditional logic, multi-step wizards, edit mode, **enum-driven options**, **extendable (repeatable) sections**, user-addable options and per-field styling. Full reference: [docs/forms.md](docs/forms.md). Interactive guide: [`form_guide_web/`](form_guide_web/). Demo app: [`example/`](example/).
+
+```dart
+enum MealChoice { vegetarian, vegan, nonVegetarian }
+
+void main() {
+  FormEnumRegistry.register('MealChoice', MealChoice.values);
+  runApp(const MyApp());
+}
+
+const rsvpJson = {
+  'fields': [
+    {'type': 'text', 'id': 'name', 'label': 'Your name', 'validators': ['required']},
+    {
+      'type': 'repeater',                 // extendable section
+      'id': 'guests',
+      'itemLabel': 'Guest {index}',
+      'addLabel': 'Add another guest',
+      'minItems': 1,
+      'maxItems': 4,
+      'fields': [
+        {'type': 'text', 'id': 'guestName', 'label': 'Guest name', 'required': true},
+        {'type': 'dropdown', 'id': 'meal', 'label': 'Meal', 'enum': 'MealChoice'},
+      ],
+    },
+    {
+      'type': 'chips',
+      'id': 'topics',
+      'multiple': true,
+      'allowCustomOptions': true,         // users can add their own
+      'options': ['Web', 'Testing'],
+      'style': {'activeColor': '#00897B'},
+    },
+  ],
+};
+
+DynamicForm(
+  controller: controller,               // DynamicFormController
+  json: rsvpJson,
+  showSubmitButton: true,
+  onSubmit: (data) => api.save(data),   // guests → List<Map>, meal → 'vegan'
+  fieldOverrides: {
+    'name': FieldOverrides(wrapper: (context, field, child) => Card(child: child)),
+  },
+);
+
+controller.getEnum('meal', MealChoice.values);  // typed read-back
+controller.addEntry('guests', data: {'guestName': 'Asha'});
+```
+
+> The form engine is based on [json_form_engine](https://github.com/rupeshrajak0285/json_form_engine) by Rupesh Rajak (MIT). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ---
 

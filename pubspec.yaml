@@ -1,19 +1,21 @@
 name: services_rj
-description: A scalable Flutter utility package providing theme management, shared preferences, network layer, connectivity handling, logging, and app configuration with production-ready architecture.
-version: 1.1.0
+description: A scalable Flutter utility package providing theme management, shared preferences, network layer, connectivity handling, logging, JSON-driven dynamic forms, and app configuration with production-ready architecture.
+version: 1.2.0
 homepage:
 
 environment:
-  sdk: ^3.10.4
+  sdk: ^3.10.0
   flutter: ">=1.17.0"
 
 dependencies:
   connectivity_plus: ^7.1.1
   device_info_plus: ^13.2.0
   dio: ^5.9.2
+  file_selector: ^1.0.3
   flutter:
     sdk: flutter
   flutter_secure_storage: ^11.2.0
+  image_picker: ^1.1.2
   path_provider: ^2.1.6
   permission_handler: ^13.0.2
   pointycastle: ^4.0.0

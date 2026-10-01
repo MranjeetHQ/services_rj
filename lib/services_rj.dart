@@ -56,6 +56,9 @@ export 'src/permissions/permission_backend.dart';
 export 'src/permissions/permission_registry.dart';
 export 'src/permissions/permission_setup.dart';
 
+// Dynamic forms (JSON form builder)
+export 'forms.dart';
+
 // Widgets
 export 'src/widgets/app_buttons.dart';
 export 'src/widgets/app_scaffold.dart';
