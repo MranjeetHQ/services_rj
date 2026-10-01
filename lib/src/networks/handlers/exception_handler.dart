@@ -3,10 +3,9 @@ import 'package:dio/dio.dart';
 import '../api_exception.dart';
 
 class ExceptionHandler {
-  static ApiException handle(
-    dynamic error, {
-    StackTrace? stackTrace,
-  }) {
+  static ApiException handle(dynamic error, {StackTrace? stackTrace}) {
+    if (error is ApiException) return error;
+
     if (error is DioException) {
       switch (error.type) {
         case DioExceptionType.connectionTimeout:
@@ -19,8 +18,9 @@ class ExceptionHandler {
 
         case DioExceptionType.badResponse:
           final statusCode = error.response?.statusCode ?? 0;
+          final data = error.response?.data;
           final message =
-              error.response?.data['message'] as String? ??
+              (data is Map ? data['message']?.toString() : null) ??
               error.message ??
               'Something went wrong';
 
@@ -49,9 +49,6 @@ class ExceptionHandler {
           );
       }
     }
-    return ApiException(
-      message: error.message ?? 'Something went wrong',
-      statusCode: error.response?.statusCode,
-    );
+    return ApiException(message: error?.toString() ?? 'Something went wrong');
   }
 }

@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'security/app_encryption.dart';
+
 /// ---------------------------------------------------------------------------
 /// Smart Shared Preference Manager
 /// ---------------------------------------------------------------------------
@@ -18,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// ✅ Industry Standard Architecture
 /// ✅ Lightweight & Scalable
 /// ✅ Package Friendly
+/// ✅ Transparent AES-256-GCM encryption when the `encryption` feature is on
 ///
 /// ---------------------------------------------------------------------------
 /// Usage:
@@ -72,6 +75,11 @@ class SharedPrefManager {
     }
   }
 
+  /// Whether [initilization] has completed.
+  static bool get isInitialized => _preferences != null;
+
+  static AppEncryption get _crypto => AppEncryption.instance;
+
   static SharedPreferences get _prefs {
     assert(
       _preferences != null,
@@ -88,6 +96,10 @@ class SharedPrefManager {
 
   static Future<bool> saveData(String key, dynamic value) async {
     try {
+      if (_crypto.isActive) {
+        return await _prefs.setString(key, _crypto.encrypt(_envelope(value)));
+      }
+
       if (value is String) {
         return await _prefs.setString(key, value);
       }
@@ -113,9 +125,7 @@ class SharedPrefManager {
         return await _prefs.setString(key, jsonEncode(value));
       }
 
-      throw UnsupportedError(
-        'Unsupported value type: ${value.runtimeType}',
-      );
+      throw UnsupportedError('Unsupported value type: ${value.runtimeType}');
     } catch (e, stackTrace) {
       debugPrint('saveData Error: $e');
       debugPrintStack(stackTrace: stackTrace);
@@ -130,9 +140,21 @@ class SharedPrefManager {
 
   static T? getData<T>(String key) {
     try {
-      final dynamic value = _prefs.get(key);
+      dynamic value = _prefs.get(key);
 
       if (value == null) return null;
+
+      /// Encrypted value: decrypt and unwrap the typed envelope.
+      if (AppEncryption.isEncrypted(value)) {
+        if (!_crypto.isInitialized) {
+          debugPrint(
+            'getData: "$key" is encrypted but encryption is not initialized.',
+          );
+          return null;
+        }
+        value = _openEnvelope(_crypto.decrypt(value as String));
+        if (value == null) return null;
+      }
 
       /// Direct Type Match
       if (value is T) {
@@ -150,6 +172,73 @@ class SharedPrefManager {
       debugPrintStack(stackTrace: stackTrace);
 
       return null;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Encryption Migration
+  // ---------------------------------------------------------------------------
+
+  /// Re-writes existing plain-text values as encrypted values.
+  ///
+  /// Run this once after turning on encryption in an app that already
+  /// stored data without it. Pass [keys] to limit the migration, for example
+  /// when other code reads SharedPreferences directly. Returns the number of
+  /// values migrated.
+  static Future<int> migrateToEncrypted({Set<String>? keys}) async {
+    if (!_crypto.isActive) return 0;
+
+    var migrated = 0;
+
+    for (final key in keys ?? _prefs.getKeys()) {
+      final value = _prefs.get(key);
+      if (value == null || AppEncryption.isEncrypted(value)) continue;
+
+      final typed = value is List ? value.cast<String>() : value;
+      if (await _prefs.setString(key, _crypto.encrypt(_envelope(typed)))) {
+        migrated++;
+      }
+    }
+
+    return migrated;
+  }
+
+  // Values are wrapped as {"t": type, "v": value} before encryption so the
+  // original Dart type comes back on read.
+  static String _envelope(dynamic value) {
+    final String type;
+    if (value is String) {
+      type = 's';
+    } else if (value is int) {
+      type = 'i';
+    } else if (value is double) {
+      type = 'd';
+    } else if (value is bool) {
+      type = 'b';
+    } else if (value is List<String>) {
+      type = 'l';
+    } else if (value is Map<String, dynamic>) {
+      type = 'm';
+    } else {
+      throw UnsupportedError('Unsupported value type: ${value.runtimeType}');
+    }
+    return jsonEncode({'t': type, 'v': value});
+  }
+
+  static dynamic _openEnvelope(String json) {
+    final map = jsonDecode(json) as Map<String, dynamic>;
+    final v = map['v'];
+    switch (map['t']) {
+      case 'i':
+        return (v as num).toInt();
+      case 'd':
+        return (v as num).toDouble();
+      case 'l':
+        return (v as List).cast<String>();
+      case 'm':
+        return Map<String, dynamic>.from(v as Map);
+      default:
+        return v;
     }
   }
 
@@ -226,6 +315,7 @@ class SharedPrefManager {
 /// ---------------------------------------------------------------------------
 abstract final class SharedPrefKeys {
   static const String userToken = "AUTH_TOKEN";
+  static const String refreshToken = "REFRESH_TOKEN";
   static const String fullName = "FULL_NAME";
   static const String isDemoUser = "IS_DEMO_USER";
   static const String themeMode = 'theme_mode';

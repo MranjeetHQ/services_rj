@@ -1,4 +1,5 @@
 import '../../core/shared_pref_manager.dart';
+import '../cache/api_cache_manager.dart';
 
 /// ---------------------------------------------------------------------------
 /// AuthTokenService – Singleton that persists & retrieves the auth token
@@ -45,10 +46,7 @@ class AuthTokenService {
 
   /// Persist a new auth token (e.g. right after login).
   Future<bool> saveToken(String token) async {
-    return SharedPrefManager.saveData(
-      SharedPrefKeys.userToken,
-      token,
-    );
+    return SharedPrefManager.saveData(SharedPrefKeys.userToken, token);
   }
 
   /// Remove the stored auth token (e.g. on logout).
@@ -63,6 +61,15 @@ class AuthTokenService {
   /// Whether a non‑empty token is currently stored.
   bool get hasToken => token != null && token!.isNotEmpty;
 
-  /// Alias for [clearToken]; useful for a unified `logout()` flow.
-  Future<void> logout() => clearToken();
+  /// Clears the token and, when [CacheConfig.clearOnLogout] is on, the API
+  /// cache, so the next user never sees the previous user's data.
+  Future<void> logout() async {
+    await clearToken();
+
+    final cache = ApiCacheManager.instance;
+    if (cache.isInitialized && cache.config.clearOnLogout) {
+      await cache.clear();
+      cache.scope = '';
+    }
+  }
 }

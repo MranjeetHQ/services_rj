@@ -7,12 +7,14 @@ class NetworkLogger extends Interceptor {
   /// Set to `true` (e.g. via [ApiConfig.printLogs]) to enable console output.
   final bool printLogs;
 
+  /// Controlled by [AppController] through the `networkLogs` feature.
+  static bool enabled = true;
+
+  bool get _print => printLogs && enabled;
+
   @override
-  void onRequest(
-    RequestOptions options,
-    RequestInterceptorHandler handler,
-  ) {
-    if (printLogs) {
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    if (_print) {
       print('[REQUEST] ${options.method} => ${options.uri}');
     }
 
@@ -20,11 +22,8 @@ class NetworkLogger extends Interceptor {
   }
 
   @override
-  void onResponse(
-    Response response,
-    ResponseInterceptorHandler handler,
-  ) {
-    if (printLogs) {
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    if (_print) {
       print(
         '[RESPONSE] ${response.statusCode} => ${response.requestOptions.uri}',
       );
@@ -35,7 +34,7 @@ class NetworkLogger extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    if (printLogs) {
+    if (_print) {
       print('[ERROR] ${err.message}');
     }
 

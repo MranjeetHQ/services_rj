@@ -1,6 +1,8 @@
 # services_rj
 
-A Flutter utility package that provides out‑of‑the‑box support for **networking**, **theming**, **button widgets**, **shared preferences**, and common app‑level helpers.
+A Flutter utility package that provides out‑of‑the‑box support for **networking** with **offline caching**, **encrypted storage**, **runtime permissions**, **theming**, **button widgets**, **shared preferences**, and common app‑level helpers. One `AppController` switches every feature on or off.
+
+**Guides:** [AppController, caching and encryption](docs/app_controller.md) · [Permissions](docs/permissions.md) · [QA report](docs/qa_report.md)
 
 ---
 
@@ -38,7 +40,7 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  services_rj: latest    
+  services_rj: ^1.1.0
 ```
 
 Then run:
@@ -58,10 +60,9 @@ import 'package:services_rj/services_rj.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await AppInitializer.initialize(
-    initializeSharedPref: true,
-    initializeTheme: true,
-    initializeNetwork: true,
+  // Every feature is on by default: storage, encryption, theme, network,
+  // offline cache, connectivity, logging and permissions.
+  await AppController.initialize(
     apiConfig: ApiConfig(
       baseUrl: 'https://jsonplaceholder.typicode.com',
       printLogs: true,           // ← enable console logs
@@ -69,6 +70,8 @@ void main() async {
       receiveTimeout: 15000,
       sendTimeout: 15000,
     ),
+    // Switch off what you don't need, e.g.:
+    // features: const AppFeatures(permissions: false),
   );
 
   runApp(const MyApp());

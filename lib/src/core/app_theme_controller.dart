@@ -18,6 +18,9 @@ class AppThemeController extends ChangeNotifier {
   bool get isSystemMode => _themeMode == ThemeMode.system;
 
   Future<void> initialize() async {
+    // Without the sharedPref feature the theme works but is not persisted.
+    if (!SharedPrefManager.isInitialized) return;
+
     final savedTheme = SharedPrefManager.getData<String>(
       SharedPrefKeys.themeMode,
     );
@@ -39,10 +42,9 @@ class AppThemeController extends ChangeNotifier {
   Future<void> setThemeMode(ThemeMode mode) async {
     _themeMode = mode;
 
-    await SharedPrefManager.saveData(
-      SharedPrefKeys.themeMode,
-      mode.name,
-    );
+    if (SharedPrefManager.isInitialized) {
+      await SharedPrefManager.saveData(SharedPrefKeys.themeMode, mode.name);
+    }
 
     notifyListeners();
   }
