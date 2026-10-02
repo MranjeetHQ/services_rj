@@ -6,10 +6,10 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('AppFeatures', () {
-    test('everything is enabled by default', () {
+    test('features are disabled by default', () {
       const f = AppFeatures();
       for (final feature in AppFeature.values) {
-        expect(f.isEnabled(feature), isTrue, reason: feature.name);
+        expect(f.isEnabled(feature), isFalse, reason: feature.name);
       }
     });
 
@@ -46,7 +46,7 @@ void main() {
 
     test('network without ApiConfig is skipped, not a crash', () async {
       await c.initialize_(
-        const AppFeatures(encryption: false, connectivity: false),
+        const AppFeatures(sharedPref: true, theme: true, network: true),
       );
       expect(c.isEnabled(AppFeature.network), isTrue);
       expect(c.isReady(AppFeature.network), isFalse);
@@ -54,6 +54,13 @@ void main() {
       expect(() => c.api, throwsStateError);
       expect(c.isReady(AppFeature.sharedPref), isTrue);
       expect(c.isReady(AppFeature.theme), isTrue);
+    });
+
+    test('default initialization succeeds without enabling features', () async {
+      await AppController.initialize();
+      expect(c.isInitialized, isTrue);
+      expect(AppFeature.values.any(c.isReady), isFalse);
+      expect(c.isReady(AppFeature.network), isFalse);
     });
 
     test(
@@ -70,17 +77,13 @@ void main() {
     );
 
     test('second initialize is ignored', () async {
-      await c.initialize_(
-        const AppFeatures(encryption: false, connectivity: false),
-      );
+      await c.initialize_(const AppFeatures(theme: true));
       await c.initialize_(const AppFeatures.none());
       expect(c.isEnabled(AppFeature.theme), isTrue);
     });
 
     test('only runtime-safe features can be switched later', () async {
-      await c.initialize_(
-        const AppFeatures(encryption: false, connectivity: false),
-      );
+      await c.initialize_(const AppFeatures(logger: true));
       expect(
         () => c.setEnabled(AppFeature.encryption, false),
         throwsStateError,
@@ -103,7 +106,7 @@ void main() {
     });
 
     test('connectivity on in a test host does not crash', () async {
-      await c.initialize_(const AppFeatures(encryption: false));
+      await c.initialize_(const AppFeatures(connectivity: true));
       expect(c.isReady(AppFeature.connectivity), isTrue);
     });
 
@@ -114,11 +117,12 @@ void main() {
     });
   });
 
-  test('legacy AppInitializer still validates ApiConfig', () {
-    expect(
-      () => AppInitializer.initialize(initializeNetwork: true),
-      throwsArgumentError,
-    );
+  test('legacy AppInitializer tolerates missing optional ApiConfig', () async {
+    AppController.instance.resetForTest();
+    await AppInitializer.initialize(initializeNetwork: true);
+    expect(AppController.instance.isInitialized, isTrue);
+    expect(AppController.instance.isReady(AppFeature.network), isFalse);
+    expect(AppController.instance.isReady(AppFeature.theme), isTrue);
   });
 }
 

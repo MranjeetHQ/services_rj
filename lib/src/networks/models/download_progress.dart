@@ -1,8 +1,5 @@
 class DownloadProgress {
-  const DownloadProgress({
-    required this.received,
-    required this.total,
-  });
+  const DownloadProgress({required this.received, required this.total});
 
   final int received;
 

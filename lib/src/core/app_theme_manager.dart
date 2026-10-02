@@ -23,8 +23,7 @@ class AppThemeManager {
 
       // ── AppBar ───────────────────────────────────────────────────────────
       appBarTheme: AppBarTheme(
-        backgroundColor:
-            config.lightScaffoldColor ?? colorScheme.surface,
+        backgroundColor: config.lightScaffoldColor ?? colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
         elevation: 0,
         centerTitle: true,
@@ -32,12 +31,9 @@ class AppThemeManager {
 
       // ── Bottom Navigation ────────────────────────────────────────────────
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor:
-            config.lightSurfaceColor ?? colorScheme.surface,
+        backgroundColor: config.lightSurfaceColor ?? colorScheme.surface,
         selectedItemColor: colorScheme.primary,
-        unselectedItemColor: colorScheme.onSurface.withValues(
-          alpha: 0.6,
-        ),
+        unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),
@@ -47,9 +43,7 @@ class AppThemeManager {
         color: config.lightSurfaceColor ?? colorScheme.surface,
         elevation: 1,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-            config.effectiveCardRadius,
-          ),
+          borderRadius: BorderRadius.circular(config.effectiveCardRadius),
         ),
       ),
 
@@ -61,10 +55,7 @@ class AppThemeManager {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(config.borderRadius),
           ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 14,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         ),
       ),
 
@@ -72,18 +63,14 @@ class AppThemeManager {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           side: BorderSide(
-            color:
-                config.outlinedButtonSideColor ?? colorScheme.primary,
+            color: config.outlinedButtonSideColor ?? colorScheme.primary,
             width: config.outlinedButtonSideWidth ?? 1.5,
           ),
           textStyle: config.outlinedButtonTextStyle,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(config.borderRadius),
           ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 14,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         ),
       ),
 
@@ -94,10 +81,7 @@ class AppThemeManager {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(config.borderRadius),
           ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 14,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         ),
       ),
 
@@ -120,10 +104,7 @@ class AppThemeManager {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(config.borderRadius),
-          borderSide: BorderSide(
-            color: colorScheme.primary,
-            width: 2,
-          ),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -165,8 +146,7 @@ class AppThemeManager {
 
       // ── AppBar ───────────────────────────────────────────────────────────
       appBarTheme: AppBarTheme(
-        backgroundColor:
-            config.darkScaffoldColor ?? colorScheme.surface,
+        backgroundColor: config.darkScaffoldColor ?? colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
         elevation: 0,
         centerTitle: true,
@@ -174,12 +154,9 @@ class AppThemeManager {
 
       // ── Bottom Navigation ────────────────────────────────────────────────
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor:
-            config.darkSurfaceColor ?? colorScheme.surface,
+        backgroundColor: config.darkSurfaceColor ?? colorScheme.surface,
         selectedItemColor: colorScheme.primary,
-        unselectedItemColor: colorScheme.onSurface.withValues(
-          alpha: 0.6,
-        ),
+        unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),
@@ -189,9 +166,7 @@ class AppThemeManager {
         color: config.darkSurfaceColor ?? colorScheme.surface,
         elevation: 1,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-            config.effectiveCardRadius,
-          ),
+          borderRadius: BorderRadius.circular(config.effectiveCardRadius),
         ),
       ),
 
@@ -203,10 +178,7 @@ class AppThemeManager {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(config.borderRadius),
           ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 14,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         ),
       ),
 
@@ -214,18 +186,14 @@ class AppThemeManager {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           side: BorderSide(
-            color:
-                config.outlinedButtonSideColor ?? colorScheme.primary,
+            color: config.outlinedButtonSideColor ?? colorScheme.primary,
             width: config.outlinedButtonSideWidth ?? 1.5,
           ),
           textStyle: config.outlinedButtonTextStyle,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(config.borderRadius),
           ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 14,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         ),
       ),
 
@@ -236,10 +204,7 @@ class AppThemeManager {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(config.borderRadius),
           ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 14,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         ),
       ),
 
@@ -262,10 +227,7 @@ class AppThemeManager {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(config.borderRadius),
-          borderSide: BorderSide(
-            color: colorScheme.primary,
-            width: 2,
-          ),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,

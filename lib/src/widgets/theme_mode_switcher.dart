@@ -9,7 +9,7 @@ class ThemeModeSwitcher extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: AppThemeController.instance,
-      builder: (_, __) {
+      builder: (_, _) {
         return Switch(
           value: AppThemeController.instance.isDarkMode,
           onChanged: (_) {

@@ -1,8 +1,8 @@
 # services_rj
 
-A Flutter utility package that provides out‑of‑the‑box support for **networking** with **offline caching**, **encrypted storage**, **runtime permissions**, **theming**, **button widgets**, **shared preferences**, and common app‑level helpers. One `AppController` switches every feature on or off.
+A Flutter utility package that provides out‑of‑the‑box support for **networking** with **offline caching**, **encrypted storage**, **runtime permissions**, **JSON-driven dynamic forms**, **theming**, **button widgets**, **shared preferences**, and common app‑level helpers. One `AppController` switches every feature on or off.
 
-**Guides:** [AppController, caching and encryption](docs/app_controller.md) · [Permissions](docs/permissions.md) · [QA report](docs/qa_report.md)
+**Guides:** [AppController, caching and encryption](docs/app_controller.md) · [Permissions](docs/permissions.md) · [Dynamic forms](docs/forms.md) · [Form guide website](form_guide_web/) (with an element builder) · [Release notes](RELEASE_NOTES.md) · [QA report](docs/qa_report.md)
 
 ---
 
@@ -30,6 +30,7 @@ A Flutter utility package that provides out‑of‑the‑box support for **netwo
     - [AppInitializer](#appinitializer)
     - [SharedPrefManager](#sharedprefmanager)
     - [Other Helpers](#other-helpers)
+  - [5. Dynamic Forms](#5-dynamic-forms)
 - [Example](#example)
 
 ---
@@ -40,7 +41,7 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  services_rj: ^1.1.0
+  services_rj: ^1.2.0
 ```
 
 Then run:
@@ -60,18 +61,9 @@ import 'package:services_rj/services_rj.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Every feature is on by default: storage, encryption, theme, network,
-  // offline cache, connectivity, logging and permissions.
+  // Features are opt-in. This app uses preferences and theme state.
   await AppController.initialize(
-    apiConfig: ApiConfig(
-      baseUrl: 'https://jsonplaceholder.typicode.com',
-      printLogs: true,           // ← enable console logs
-      connectTimeout: 15000,
-      receiveTimeout: 15000,
-      sendTimeout: 15000,
-    ),
-    // Switch off what you don't need, e.g.:
-    // features: const AppFeatures(permissions: false),
+    features: const AppFeatures(sharedPref: true, theme: true),
   );
 
   runApp(const MyApp());
@@ -140,8 +132,11 @@ Holds all network‑related configuration:
 Singleton that initialises and manages the Dio instance.
 
 ```dart
-// Initialisation (done automatically by AppInitializer)
-DioService.instance.initialize(config);
+// Opt in to networking during app initialization.
+await AppController.initialize(
+  features: const AppFeatures(network: true),
+  apiConfig: config,
+);
 
 // Access the Dio instance
 final response = await DioService.instance.dio.get('/posts');
@@ -532,6 +527,62 @@ final score = SharedPrefManager.getData<int>('score');
 | `app_connectivity.dart`| Network connectivity checker                      |
 | `app_extensions.dart`  | Common Dart / Flutter extensions                  |
 | `widgets/`             | `AppScaffold`, `PrimaryLoader`, `ThemeModeSwitcher` |
+
+---
+
+### 5. Dynamic Forms
+
+Build complete forms from JSON — 53 field types, validation (including one-key **text presets** for PAN, Aadhaar, GST, mobile, IFSC and more), conditional logic, multi-step wizards, edit mode, **enum-driven options**, **extendable (repeatable) sections**, user-addable options and per-field styling. Full reference: [docs/forms.md](docs/forms.md). Interactive guide: [`form_guide_web/`](form_guide_web/). Demo app: [`example/`](example/).
+
+```dart
+enum MealChoice { vegetarian, vegan, nonVegetarian }
+
+void main() {
+  FormEnumRegistry.register('MealChoice', MealChoice.values);
+  runApp(const MyApp());
+}
+
+const rsvpJson = {
+  'fields': [
+    {'type': 'text', 'id': 'name', 'label': 'Your name', 'validators': ['required']},
+    {
+      'type': 'repeater',                 // extendable section
+      'id': 'guests',
+      'itemLabel': 'Guest {index}',
+      'addLabel': 'Add another guest',
+      'minItems': 1,
+      'maxItems': 4,
+      'fields': [
+        {'type': 'text', 'id': 'guestName', 'label': 'Guest name', 'required': true},
+        {'type': 'dropdown', 'id': 'meal', 'label': 'Meal', 'enum': 'MealChoice'},
+      ],
+    },
+    {
+      'type': 'chips',
+      'id': 'topics',
+      'multiple': true,
+      'allowCustomOptions': true,         // users can add their own
+      'options': ['Web', 'Testing'],
+      'style': {'activeColor': '#00897B'},
+    },
+  ],
+};
+
+DynamicForm(
+  controller: controller,               // DynamicFormController
+  json: rsvpJson,
+  showSubmitButton: true,
+  onSubmit: (data) => api.save(data),   // guests → List<Map>, meal → 'vegan'
+  fieldOverrides: {
+    'name': FieldOverrides(wrapper: (context, field, child) => Card(child: child)),
+  },
+);
+
+controller.getEnum('meal', MealChoice.values);  // typed read-back
+controller.addEntry('guests', data: {'guestName': 'Asha'});
+```
+
+> The form engine is based on [json_form_engine](https://github.com/rupeshrajak0285/json_form_engine) by Rupesh Rajak (MIT). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ---
 

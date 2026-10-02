@@ -19,13 +19,13 @@ import 'shared_pref_manager.dart';
 
 /// Single place that controls every functionality of `services_rj`.
 ///
-/// Call [initialize] once in `main()`. Every feature is enabled by default;
-/// pass [AppFeatures] to switch any of them off.
+/// Call [initialize] once in `main()`. Features are disabled by default;
+/// pass [AppFeatures] to enable only the functionality the app uses.
 ///
 /// ```dart
 /// await AppController.initialize(
 ///   apiConfig: ApiConfig(baseUrl: 'https://api.example.com'),
-///   features: const AppFeatures(networkLogs: false),
+///   features: const AppFeatures(network: true, apiCache: true),
 ///   cacheConfig: const CacheConfig(defaultTtl: Duration(minutes: 10)),
 /// );
 ///
@@ -213,12 +213,16 @@ class AppController extends ChangeNotifier {
               directoryOverride: _cacheDirectory,
             );
           }
-          if (ApiCacheManager.instance.isInitialized) _ready.add(feature);
+          if (ApiCacheManager.instance.isInitialized) {
+            _ready.add(feature);
+          }
         case AppFeature.logger:
         case AppFeature.permissions:
           _ready.add(feature);
         case AppFeature.networkLogs:
-          if (_ready.contains(AppFeature.network)) _ready.add(feature);
+          if (_ready.contains(AppFeature.network)) {
+            _ready.add(feature);
+          }
         default:
           break;
       }

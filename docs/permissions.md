@@ -15,10 +15,12 @@
 
 ## Quick start
 
-The feature is on by default. `AppController.initialize()` also reads the Android SDK level once, so later checks have no extra delay.
+The feature is opt-in. Enable it during initialization; `AppController.initialize()` also reads the Android SDK level once, so later checks have no extra delay.
 
 ```dart
-await AppController.initialize(apiConfig: ApiConfig(baseUrl: '...'));
+await AppController.initialize(
+  features: const AppFeatures(permissions: true),
+);
 
 // Simple check and request
 final status = await AppPermissionManager.instance.request(AppPermission.camera);
@@ -40,7 +42,7 @@ final map = await AppPermissionManager.instance.requestAll([
 ]);
 ```
 
-Turn the feature off with `AppFeatures(permissions: false)`. Every call then throws a `StateError`, which makes accidental use easy to spot.
+When the feature is disabled, accessing it through `AppController.instance.permissions` throws a `StateError`, which makes accidental use easy to spot.
 
 ## Statuses
 

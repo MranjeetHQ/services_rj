@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Services Rj Example</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>services_rj_example</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>The permissions demo opens the camera permission prompt so you can see how the result is reported.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>The permissions demo asks for microphone access to show how the status changes after you answer.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library access is requested to demonstrate the photos and limited-access statuses.</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Music library access is requested to demonstrate the audio permission tag.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Location while the app is open is requested to demonstrate the location permission tag.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Background location is requested to demonstrate the two-step location always flow.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Contacts access is requested to demonstrate the contacts permission tag. Nothing is read or stored.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Full calendar access is requested to demonstrate the calendar permission tag. No events are read.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Calendar access is requested to demonstrate the calendar permission tag on older iOS versions.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Bluetooth access is requested to demonstrate the bluetooth permission tag. No devices are scanned.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Motion and fitness access is requested to demonstrate the motion permission tag.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Speech recognition is requested to demonstrate the speech permission tag. No audio is processed.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This demo asks for tracking permission only to show the App Tracking Transparency status. Nothing is tracked.</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>Full reminders access is requested to demonstrate the reminders permission tag.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>Reminders access is requested to demonstrate the reminders permission tag on older iOS versions.</string>
+</dict>
+</plist>

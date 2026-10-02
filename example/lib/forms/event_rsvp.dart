@@ -1,0 +1,138 @@
+/// Single-page form: enum-driven options, an extendable guest list,
+/// user-addable chips and conditional fields.
+const Map<String, dynamic> eventRsvpForm = {
+  'id': 'event_rsvp',
+  'title': 'Flutter Meetup RSVP',
+  'confirmDiscard': true,
+  'discardTitle': 'Leave without saving your RSVP?',
+  'style': {'variant': 'outlined', 'borderRadius': 12},
+  'fields': [
+    {'type': 'sectionHeader', 'id': 'h_contact', 'label': 'Who is booking'},
+    {
+      'type': 'text',
+      'id': 'bookerName',
+      'label': 'Your name',
+      'prefixIcon': 'person',
+      'textCase': 'words',
+      'validators': [
+        'required',
+        {'type': 'minLength', 'value': 2},
+      ],
+    },
+    {
+      'type': 'email',
+      'id': 'bookerEmail',
+      'label': 'Where should we send the ticket?',
+      'prefixIcon': 'email',
+      'validators': ['required', 'email'],
+    },
+    {
+      'type': 'segmented',
+      'id': 'tier',
+      'label': 'Ticket tier',
+      'enum': 'TicketTier',
+      'required': true,
+    },
+    {
+      'type': 'text',
+      'id': 'promoCode',
+      'label': 'Backstage invite code',
+      'prefixText': 'BK-',
+      'textCase': 'upper',
+      'maxLength': 8,
+      'showCounter': true,
+      'visibleWhen': {
+        'field': 'tier',
+        'operator': 'equals',
+        'value': 'backstage',
+      },
+      'requiredWhen': {
+        'field': 'tier',
+        'operator': 'equals',
+        'value': 'backstage',
+      },
+    },
+    {'type': 'sectionHeader', 'id': 'h_guests', 'label': 'Guests'},
+    {
+      'type': 'repeater',
+      'id': 'guests',
+      'label': 'Who is coming with you?',
+      'helperText': 'Add up to four guests. Each guest gets their own badge.',
+      'itemLabel': 'Guest {index}',
+      'addLabel': 'Add another guest',
+      'minItems': 1,
+      'maxItems': 4,
+      'reorderable': true,
+      'style': {'containerColor': '#F3F6FB', 'containerRadius': 14},
+      'fields': [
+        {
+          'type': 'text',
+          'id': 'guestName',
+          'label': 'Guest name',
+          'required': true,
+        },
+        {
+          'type': 'dropdown',
+          'id': 'meal',
+          'label': 'Meal preference',
+          'enum': 'MealChoice',
+          'required': true,
+        },
+        {
+          'type': 'switch',
+          'id': 'needsAccess',
+          'label': 'Needs step-free access',
+        },
+      ],
+    },
+    {'type': 'sectionHeader', 'id': 'h_prefs', 'label': 'Preferences'},
+    {
+      'type': 'chips',
+      'id': 'tracks',
+      'label': 'Talks you are excited about',
+      'multiple': true,
+      'maxItems': 3,
+      'allowCustomOptions': true,
+      'customOptionLabel': 'Suggest a talk',
+      'helperText': 'Pick up to three, or suggest your own.',
+      'options': [
+        {'label': 'State management', 'value': 'state', 'icon': 'tag'},
+        {'label': 'Flutter Web', 'value': 'web', 'icon': 'web'},
+        {'label': 'Testing', 'value': 'testing', 'icon': 'check'},
+        {'label': 'Animations', 'value': 'motion', 'icon': 'star'},
+      ],
+    },
+    {
+      'type': 'slider',
+      'id': 'arrival',
+      'label': 'Expected arrival (minutes after doors open)',
+      'min': 0,
+      'max': 60,
+      'divisions': 6,
+      'initialValue': 15,
+      'style': {'activeColor': '#00897B'},
+    },
+    {
+      'type': 'checkbox',
+      'id': 'photoConsent',
+      'label': 'I agree to appear in event photos',
+      'validators': [
+        {'type': 'required', 'message': 'Please confirm photo consent'},
+      ],
+    },
+  ],
+};
+
+/// An existing booking, used to show edit mode.
+const Map<String, dynamic> savedRsvp = {
+  'bookerName': 'Meera Iyer',
+  'bookerEmail': 'meera@example.com',
+  'tier': 'premium',
+  'guests': [
+    {'guestName': 'Kabir Shah', 'meal': 'vegan', 'needsAccess': false},
+    {'guestName': 'Ananya Rao', 'meal': 'jain', 'needsAccess': true},
+  ],
+  'tracks': ['web', 'testing'],
+  'arrival': 30.0,
+  'photoConsent': true,
+};

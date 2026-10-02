@@ -17,12 +17,6 @@ class AppInitializer {
     AppFeatures? features,
     CacheConfig cacheConfig = const CacheConfig(),
   }) async {
-    if (initializeNetwork && apiConfig == null) {
-      throw ArgumentError(
-        'ApiConfig is required when initializeNetwork is true.',
-      );
-    }
-
     await AppController.initialize(
       features:
           features ??

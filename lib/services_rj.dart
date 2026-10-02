@@ -1,4 +1,4 @@
-library services_rj;
+library;
 
 // Control
 export 'src/core/app_controller.dart';
@@ -55,6 +55,9 @@ export 'src/permissions/app_permission_status.dart';
 export 'src/permissions/permission_backend.dart';
 export 'src/permissions/permission_registry.dart';
 export 'src/permissions/permission_setup.dart';
+
+// Dynamic forms (JSON form builder)
+export 'forms.dart';
 
 // Widgets
 export 'src/widgets/app_buttons.dart';

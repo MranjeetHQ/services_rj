@@ -20,7 +20,7 @@ void main() {
       'legacy_int': 7,
     });
     await AppController.initialize(
-      features: const AppFeatures(network: false, connectivity: false),
+      features: const AppFeatures(sharedPref: true, encryption: true),
       encryptionKeyProvider: () async => key(0),
     );
     raw = await SharedPreferences.getInstance();

@@ -59,7 +59,11 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     dir = await Directory.systemTemp.createTemp('services_rj_cache');
     await AppController.initialize(
-      features: const AppFeatures(connectivity: false),
+      features: const AppFeatures(
+        network: true,
+        apiCache: true,
+        encryption: true,
+      ),
       apiConfig: const ApiConfig(baseUrl: 'https://example.test'),
       encryptionKeyProvider: () async => testKey(),
       cacheDirectory: dir,
@@ -95,7 +99,7 @@ void main() {
     onRevalidated: onRevalidated,
   );
 
-  test('controller started the cache with every feature on', () {
+  test('controller starts explicitly enabled cache and encryption', () {
     expect(AppController.instance.isReady(AppFeature.apiCache), isTrue);
     expect(AppController.instance.isReady(AppFeature.encryption), isTrue);
     expect(cache.config.defaultPolicy, CachePolicy.staleWhileRevalidate);
@@ -143,9 +147,9 @@ void main() {
         final fresh = await refreshed.future;
         expect(fresh.data, {'value': 2});
         await cache.flush();
-      // peek, not request: a request would start another background refresh
-      // that leaks into the next test.
-      expect(api.peek(get(e))!.data, {'value': 2});
+        // peek, not request: a request would start another background refresh
+        // that leaks into the next test.
+        expect(api.peek(get(e))!.data, {'value': 2});
       },
     );
 

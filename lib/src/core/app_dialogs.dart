@@ -21,10 +21,7 @@ class AppDialogs {
     await showDialog(
       context: context,
       builder: (_) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(message),
-        );
+        return AlertDialog(title: Text(title), content: Text(message));
       },
     );
   }

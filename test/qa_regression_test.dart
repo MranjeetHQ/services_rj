@@ -75,7 +75,16 @@ void main() {
     FlutterSecureStorage.setMockInitialValues({});
     dir = await Directory.systemTemp.createTemp('services_rj_qa');
     await AppController.initialize(
-      features: const AppFeatures(connectivity: false),
+      features: const AppFeatures(
+        sharedPref: true,
+        theme: true,
+        network: true,
+        apiCache: true,
+        encryption: true,
+        logger: true,
+        networkLogs: true,
+        permissions: true,
+      ),
       apiConfig: const ApiConfig(baseUrl: 'https://qa.test'),
       cacheDirectory: dir,
     );
@@ -246,6 +255,7 @@ void main() {
       final dir2 = await Directory.systemTemp.createTemp('services_rj_qa9');
       await AppController.initialize(
         features: const AppFeatures(
+          network: true,
           apiCache: false,
           connectivity: false,
           encryption: false,
