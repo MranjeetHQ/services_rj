@@ -33,7 +33,7 @@ import 'security/app_encryption.dart';
 ///   "abc123",
 /// );
 ///
-/// final token = SharedPrefManager.getData<String>(
+/// final String? token = SharedPrefManager.getData(
 ///   SharedPrefKeys.userToken,
 /// );
 ///

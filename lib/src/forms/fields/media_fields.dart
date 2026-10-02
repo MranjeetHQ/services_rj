@@ -320,7 +320,7 @@ class DynamicImageField extends StatelessWidget {
         preview = Image.network(
           path,
           fit: BoxFit.cover,
-          errorBuilder: (context, _, __) =>
+          errorBuilder: (context, _, _) =>
               const Icon(Icons.broken_image_outlined),
         );
       } else {

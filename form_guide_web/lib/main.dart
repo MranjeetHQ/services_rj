@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'guide_enums.dart';
 import 'pages/advanced_pages.dart';
 import 'pages/basics_pages.dart';
+import 'pages/elements_page.dart';
 
 void main() {
   registerGuideEnums();
@@ -28,6 +29,12 @@ final List<GuideSection> guideSections = [
     'Getting started',
     Icons.rocket_launch_outlined,
     (_) => const GettingStartedPage(),
+  ),
+  GuideSection(
+    'elements',
+    'Element builder',
+    Icons.view_quilt_outlined,
+    (_) => const ElementsPage(),
   ),
   GuideSection(
     'fields',
@@ -114,7 +121,12 @@ class _FormGuideAppState extends State<FormGuideApp> {
       themeMode: _mode,
       // `/#/fields` style deep links.
       onGenerateRoute: (settings) {
-        final slug = (settings.name ?? '/').replaceFirst('/', '');
+        final slug =
+            (settings.name ?? '/')
+                .split('/')
+                .where((p) => p.isNotEmpty)
+                .firstOrNull ??
+            '';
         final index = guideSections.indexWhere((s) => s.slug == slug);
         return MaterialPageRoute<void>(
           settings: settings,

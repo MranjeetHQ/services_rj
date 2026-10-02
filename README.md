@@ -2,7 +2,7 @@
 
 A Flutter utility package that provides out‑of‑the‑box support for **networking** with **offline caching**, **encrypted storage**, **runtime permissions**, **JSON-driven dynamic forms**, **theming**, **button widgets**, **shared preferences**, and common app‑level helpers. One `AppController` switches every feature on or off.
 
-**Guides:** [AppController, caching and encryption](docs/app_controller.md) · [Permissions](docs/permissions.md) · [Dynamic forms](docs/forms.md) · [Form guide website](form_guide_web/) · [QA report](docs/qa_report.md)
+**Guides:** [AppController, caching and encryption](docs/app_controller.md) · [Permissions](docs/permissions.md) · [Dynamic forms](docs/forms.md) · [Form guide website](form_guide_web/) (with an element builder) · [Release notes](RELEASE_NOTES.md) · [QA report](docs/qa_report.md)
 
 ---
 

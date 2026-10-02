@@ -1,4 +1,4 @@
-library services_rj;
+library;
 
 // Control
 export 'src/core/app_controller.dart';

@@ -1,10 +1,7 @@
 import 'package:dio/dio.dart';
 
 class AuthInterceptor extends Interceptor {
-  AuthInterceptor({
-    required this.getToken,
-    required this.onRefreshToken,
-  });
+  AuthInterceptor({required this.getToken, required this.onRefreshToken});
 
   final Future<String?> Function() getToken;
 

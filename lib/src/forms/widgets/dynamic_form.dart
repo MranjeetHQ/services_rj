@@ -233,7 +233,7 @@ class _DynamicFormState extends State<DynamicForm> {
   Widget _buildFieldList() {
     return ValueListenableBuilder<int>(
       valueListenable: widget.controller.structureRevision,
-      builder: (context, _, __) {
+      builder: (context, _, _) {
         final order = widget.controller.fieldOrder;
         final topLevelIds = _config.fields
             .where((f) => order.contains(f.id))

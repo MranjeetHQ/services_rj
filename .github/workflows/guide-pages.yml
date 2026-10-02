@@ -1,0 +1,51 @@
+name: Deploy form guide
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'form_guide_web/**'
+      - 'lib/**'
+      - 'pubspec.yaml'
+      - '.github/workflows/guide-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+        working-directory: form_guide_web
+      # Fail the deploy when something is undocumented.
+      - run: flutter test
+        working-directory: form_guide_web
+      # Project pages live at https://<user>.github.io/<repo>/
+      - run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+        working-directory: form_guide_web
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: form_guide_web/build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

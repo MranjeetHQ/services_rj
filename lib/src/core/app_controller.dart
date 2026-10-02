@@ -89,9 +89,7 @@ class AppController extends ChangeNotifier {
     required Directory? cacheDirectory,
   }) async {
     if (_isInitialized) {
-      AppLogger.warning(
-        'AppController.initialize() called twice; ignoring.',
-      );
+      AppLogger.warning('AppController.initialize() called twice; ignoring.');
       return;
     }
 
@@ -152,10 +150,7 @@ class AppController extends ChangeNotifier {
         _ready.add(AppFeature.apiCache);
       } catch (e, st) {
         // The app keeps working without a cache; requests go to the network.
-        AppLogger.error(
-          'API cache could not start: $e',
-          stackTrace: st,
-        );
+        AppLogger.error('API cache could not start: $e', stackTrace: st);
       }
     }
 
@@ -218,14 +213,16 @@ class AppController extends ChangeNotifier {
               directoryOverride: _cacheDirectory,
             );
           }
-          if (ApiCacheManager.instance.isInitialized)
+          if (ApiCacheManager.instance.isInitialized) {
             _ready.add(feature);
+          }
         case AppFeature.logger:
         case AppFeature.permissions:
           _ready.add(feature);
         case AppFeature.networkLogs:
-          if (_ready.contains(AppFeature.network))
+          if (_ready.contains(AppFeature.network)) {
             _ready.add(feature);
+          }
         default:
           break;
       }
@@ -290,17 +287,14 @@ class AppController extends ChangeNotifier {
 
   /// Deletes all data this package stored: preferences, the API cache and,
   /// when [destroyEncryptionKey] is true, the encryption key itself.
-  Future<void> wipeAllData({
-    bool destroyEncryptionKey = false,
-  }) async {
+  Future<void> wipeAllData({bool destroyEncryptionKey = false}) async {
     if (ApiCacheManager.instance.isInitialized) {
       await ApiCacheManager.instance.clear();
     }
     if (SharedPrefManager.isInitialized) {
       await SharedPrefManager.clearAllSharedPrefData();
     }
-    if (destroyEncryptionKey &&
-        AppEncryption.instance.isInitialized) {
+    if (destroyEncryptionKey && AppEncryption.instance.isInitialized) {
       await AppEncryption.instance.destroyKey();
       await AppEncryption.instance.initialize();
     }

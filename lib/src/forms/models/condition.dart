@@ -115,14 +115,16 @@ class Condition {
 
   /// Serializes back to JSON.
   Map<String, dynamic> toJson() {
-    if (and != null)
+    if (and != null) {
       return {
         'and': [for (final c in and!) c.toJson()],
       };
-    if (or != null)
+    }
+    if (or != null) {
       return {
         'or': [for (final c in or!) c.toJson()],
       };
+    }
     if (not != null) return {'not': not!.toJson()};
     return {
       'field': field,

@@ -7,6 +7,7 @@ import 'package:form_guide_web/catalog/field_catalog.dart';
 import 'package:form_guide_web/catalog/reference_catalog.dart';
 import 'package:form_guide_web/guide_enums.dart';
 import 'package:form_guide_web/main.dart';
+import 'package:form_guide_web/pages/elements_page.dart';
 import 'package:services_rj/services_rj.dart';
 
 void main() {
@@ -109,5 +110,25 @@ void main() {
       await tester.pumpWidget(const SizedBox());
       c.dispose();
     }
+  });
+
+  testWidgets('element builder opens every element and deep links', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1400, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        onGenerateRoute: (settings) => MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => const Scaffold(body: ElementsPage()),
+        ),
+        initialRoute: '/elements/dropdown',
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('"dropdown"'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

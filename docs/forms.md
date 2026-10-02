@@ -1,6 +1,6 @@
 # Dynamic forms
 
-`DynamicForm` renders a complete form from JSON (a `Map` or a JSON string). The interactive guide in [`form_guide_web/`](../form_guide_web/) documents every field type with live previews. This page is the short reference.
+`DynamicForm` renders a complete form from JSON (a `Map` or a JSON string). The interactive guide in [`form_guide_web/`](../form_guide_web/) documents every field type with live previews, and its Element builder lets you edit any element's JSON and see it render. This page is the short reference.
 
 ```dart
 import 'package:services_rj/services_rj.dart'; // or package:services_rj/forms.dart

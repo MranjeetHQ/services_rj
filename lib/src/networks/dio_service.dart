@@ -64,9 +64,7 @@ class DioService {
   // ---------------------------------------------------------------------------
 
   void _registerInterceptors(ApiConfig config) {
-    _dio!.interceptors.add(
-      NetworkLogger(printLogs: config.printLogs),
-    );
+    _dio!.interceptors.add(NetworkLogger(printLogs: config.printLogs));
 
     for (final interceptor in _interceptors) {
       _registerInterceptor(interceptor);
