@@ -42,8 +42,7 @@ class FakeAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
-Uint8List testKey() =>
-    Uint8List.fromList(List.generate(32, (i) => i));
+Uint8List testKey() => Uint8List.fromList(List.generate(32, (i) => i));
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -100,23 +99,11 @@ void main() {
     onRevalidated: onRevalidated,
   );
 
-  test(
-    'controller starts explicitly enabled cache and encryption',
-    () {
-      expect(
-        AppController.instance.isReady(AppFeature.apiCache),
-        isTrue,
-      );
-      expect(
-        AppController.instance.isReady(AppFeature.encryption),
-        isTrue,
-      );
-      expect(
-        cache.config.defaultPolicy,
-        CachePolicy.staleWhileRevalidate,
-      );
-    },
-  );
+  test('controller starts explicitly enabled cache and encryption', () {
+    expect(AppController.instance.isReady(AppFeature.apiCache), isTrue);
+    expect(AppController.instance.isReady(AppFeature.encryption), isTrue);
+    expect(cache.config.defaultPolicy, CachePolicy.staleWhileRevalidate);
+  });
 
   group('stale-while-revalidate', () {
     test('fresh cache answers without network', () async {
@@ -144,11 +131,7 @@ void main() {
 
         final watch = Stopwatch()..start();
         final stale = await api.request(
-          get(
-            e,
-            ttl: Duration.zero,
-            onRevalidated: refreshed.complete,
-          ),
+          get(e, ttl: Duration.zero, onRevalidated: refreshed.complete),
         );
         watch.stop();
 
@@ -170,24 +153,17 @@ void main() {
       },
     );
 
-    test(
-      'onRevalidated is not called when data did not change',
-      () async {
-        final e = uniq();
-        await api.request(get(e, ttl: Duration.zero));
-        var called = false;
-        await api.request(
-          get(
-            e,
-            ttl: Duration.zero,
-            onRevalidated: (_) => called = true,
-          ),
-        );
-        await Future<void>.delayed(const Duration(milliseconds: 20));
-        expect(http.calls, 2);
-        expect(called, isFalse);
-      },
-    );
+    test('onRevalidated is not called when data did not change', () async {
+      final e = uniq();
+      await api.request(get(e, ttl: Duration.zero));
+      var called = false;
+      await api.request(
+        get(e, ttl: Duration.zero, onRevalidated: (_) => called = true),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(http.calls, 2);
+      expect(called, isFalse);
+    });
   });
 
   group('fallbacks', () {
@@ -195,9 +171,7 @@ void main() {
       final e = uniq();
       await api.request(get(e, policy: CachePolicy.networkFirst));
       http.offline = true;
-      final res = await api.request(
-        get(e, policy: CachePolicy.networkFirst),
-      );
+      final res = await api.request(get(e, policy: CachePolicy.networkFirst));
       expect(res.isFromCache, isTrue);
       expect(res.data, {'value': 1});
     });
@@ -206,9 +180,7 @@ void main() {
       final e = uniq();
       await api.request(get(e, policy: CachePolicy.networkFirst));
       http.status = 503;
-      final res = await api.request(
-        get(e, policy: CachePolicy.networkFirst),
-      );
+      final res = await api.request(get(e, policy: CachePolicy.networkFirst));
       expect(res.isFromCache, isTrue);
     });
 
@@ -228,22 +200,19 @@ void main() {
       );
     });
 
-    test(
-      'offline without cache throws a clear ApiException',
-      () async {
-        http.offline = true;
-        await expectLater(
-          api.request(get(uniq())),
-          throwsA(
-            isA<ApiException>().having(
-              (x) => x.message,
-              'message',
-              'No internet connection',
-            ),
+    test('offline without cache throws a clear ApiException', () async {
+      http.offline = true;
+      await expectLater(
+        api.request(get(uniq())),
+        throwsA(
+          isA<ApiException>().having(
+            (x) => x.message,
+            'message',
+            'No internet connection',
           ),
-        );
-      },
-    );
+        ),
+      );
+    });
 
     test('cacheOnly without data throws', () async {
       await expectLater(
@@ -256,52 +225,42 @@ void main() {
     test('networkOnly never reads the cache', () async {
       final e = uniq();
       await api.request(get(e));
-      final res = await api.request(
-        get(e, policy: CachePolicy.networkOnly),
-      );
+      final res = await api.request(get(e, policy: CachePolicy.networkOnly));
       expect(res.isFromCache, isFalse);
       expect(http.calls, 2);
     });
   });
 
   group('behaviour', () {
-    test(
-      'concurrent identical requests share one network call',
-      () async {
-        http.delay = const Duration(milliseconds: 30);
-        final e = uniq();
-        await Future.wait([
-          api.request(get(e)),
-          api.request(get(e)),
-          api.request(get(e)),
-        ]);
-        expect(http.calls, 1);
-      },
-    );
+    test('concurrent identical requests share one network call', () async {
+      http.delay = const Duration(milliseconds: 30);
+      final e = uniq();
+      await Future.wait([
+        api.request(get(e)),
+        api.request(get(e)),
+        api.request(get(e)),
+      ]);
+      expect(http.calls, 1);
+    });
 
-    test(
-      'POST is not cached by default and can invalidate GETs',
-      () async {
-        await api.request(get('/posts'));
-        await api.request(
-          get('/posts', ttl: const Duration(hours: 1)),
-        );
-        expect(http.calls, 1);
+    test('POST is not cached by default and can invalidate GETs', () async {
+      await api.request(get('/posts'));
+      await api.request(get('/posts', ttl: const Duration(hours: 1)));
+      expect(http.calls, 1);
 
-        const post = ApiRequest(
-          endpoint: '/posts',
-          method: ApiMethod.post,
-          body: {'t': 'x'},
-          invalidateCache: ['/posts'],
-        );
-        await api.request(post);
-        await api.request(post);
-        expect(http.calls, 3);
+      const post = ApiRequest(
+        endpoint: '/posts',
+        method: ApiMethod.post,
+        body: {'t': 'x'},
+        invalidateCache: ['/posts'],
+      );
+      await api.request(post);
+      await api.request(post);
+      expect(http.calls, 3);
 
-        await api.request(get('/posts'));
-        expect(http.calls, 4, reason: 'GET /posts was invalidated');
-      },
-    );
+      await api.request(get('/posts'));
+      expect(http.calls, 4, reason: 'GET /posts was invalidated');
+    });
 
     test('query order does not change the key', () {
       const a = ApiRequest(
@@ -338,9 +297,7 @@ void main() {
       final e = uniq();
       await api.request(get(e, ttl: Duration.zero));
       http.body = {'value': 9};
-      final events = await api
-          .watch(get(e, ttl: Duration.zero))
-          .toList();
+      final events = await api.watch(get(e, ttl: Duration.zero)).toList();
       expect(events.map((r) => r.isFromCache), [true, false]);
       expect(events.last.data, {'value': 9});
     });
@@ -348,16 +305,10 @@ void main() {
     test('runtime switch-off bypasses the cache', () async {
       final e = uniq();
       await api.request(get(e));
-      await AppController.instance.setEnabled(
-        AppFeature.apiCache,
-        false,
-      );
+      await AppController.instance.setEnabled(AppFeature.apiCache, false);
       final res = await api.request(get(e));
       expect(res.isFromCache, isFalse);
-      await AppController.instance.setEnabled(
-        AppFeature.apiCache,
-        true,
-      );
+      await AppController.instance.setEnabled(AppFeature.apiCache, true);
     });
   });
 
@@ -367,10 +318,7 @@ void main() {
       await api.request(get('/secret-endpoint'));
       await cache.flush();
 
-      final files = dir
-          .listSync(recursive: true)
-          .whereType<File>()
-          .toList();
+      final files = dir.listSync(recursive: true).whereType<File>().toList();
       expect(files, isNotEmpty);
       for (final f in files) {
         expect(f.path, endsWith('.enc'));
@@ -381,30 +329,20 @@ void main() {
       }
     });
 
-    test(
-      'data survives a restart and is preloaded into memory',
-      () async {
-        final e = uniq();
-        http.body = {'kept': true};
-        await api.request(get(e, ttl: const Duration(hours: 1)));
-        await cache.flush();
+    test('data survives a restart and is preloaded into memory', () async {
+      final e = uniq();
+      http.body = {'kept': true};
+      await api.request(get(e, ttl: const Duration(hours: 1)));
+      await cache.flush();
 
-        cache.reset();
-        await cache.initialize(
-          const CacheConfig(),
-          directoryOverride: dir,
-        );
+      cache.reset();
+      await cache.initialize(const CacheConfig(), directoryOverride: dir);
 
-        final instant = api.peek(get(e));
-        expect(
-          instant,
-          isNotNull,
-          reason: 'preloaded before the first frame',
-        );
-        expect(instant!.data, {'kept': true});
-        expect(http.calls, 1);
-      },
-    );
+      final instant = api.peek(get(e));
+      expect(instant, isNotNull, reason: 'preloaded before the first frame');
+      expect(instant!.data, {'kept': true});
+      expect(http.calls, 1);
+    });
 
     test('a tampered file is discarded, not trusted', () async {
       final e = uniq();
@@ -414,9 +352,7 @@ void main() {
       final hash = AppEncryption.sha256Hex(
         cache.keyFor(get(e), baseUrl: 'https://example.test'),
       );
-      final file = File(
-        '${dir.path}/services_rj_api_cache/$hash.enc',
-      );
+      final file = File('${dir.path}/services_rj_api_cache/$hash.enc');
       expect(file.existsSync(), isTrue);
       final bytes = file.readAsBytesSync();
       bytes[bytes.length - 1] ^= 0xFF;

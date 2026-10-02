@@ -44,7 +44,7 @@ Adapters (register with `FieldFactory.register`): `signature`, `qrScanner`, `bar
 
 ## Enums
 
-Every string option has a Dart enum: `ValidatorType`, `ConditionOperator`, `KeyboardKind`, `InputActionKind`, `TextCase`, `TextPreset`, `OptionLayout`, `LabelBehavior`, `LabelPosition`, `FieldStyleVariant`, `MediaSource`. Each has a tolerant `fromString`.
+Every string option has a Dart enum: `ValidatorType`, `ConditionOperator`, `KeyboardKind`, `InputActionKind`, `TextCase`, `TextPreset`, `PhoneFormat`, `OptionLayout`, `LabelBehavior`, `LabelPosition`, `FieldStyleVariant`, `MediaSource`. Each has a tolerant `fromString`.
 
 Dart enums can supply options:
 
@@ -111,6 +111,40 @@ TextPresets.register('employeeId', TextPresetSpec(
 ));
 // JSON: {"type": "text", "id": "emp", "preset": "employeeId"}
 ```
+
+### Phone numbers with a country code
+
+Phone fields (`"type": "phone"`, or a text field with the `mobile` or `phone` preset) can offer an optional country code picker. It is off unless you set `countryCode`:
+
+```json
+{"type": "text", "id": "mobile", "label": "Mobile", "preset": "mobile", "countryCode": true}
+{"type": "phone", "id": "office", "label": "Office", "countryCode": "+44", "countryCodes": ["IN", "US", "+44", "AE"]}
+```
+
+| Key | Meaning |
+|---|---|
+| `countryCode` | `true` (first country, India by default) or a default country as ISO code (`"US"`) or dial code (`"+44"`) |
+| `countryCodes` | Optional list of ISO or dial codes the picker offers, in order |
+
+The input holds only the national number. Internally the value is `+<code><digits>` (`+919876543210`), and you choose how it comes out of the controller:
+
+| Option | Result |
+|---|---|
+| `PhoneFormat.combined` (default) | `{"mobile": "+919876543210"}` |
+| `PhoneFormat.separate` | `{"mobile": "9876543210", "mobileCountryCode": "+91"}` |
+
+Set it where it suits you, most specific first: `getFormData(phoneFormat: ...)` for one call, `"phoneFormat": "separate"` on a field (and `"countryCodeKey": "dial"` to rename the code key), or `DynamicFormController(phoneFormat: ...)` for every phone field. `onChanged`, `onSubmit` and repeater entries follow the same rule, while validation and conditions always see the combined value.
+
+```dart
+controller.getFormData(phoneFormat: PhoneFormat.separate);
+controller.getPhoneNumber('mobile');   // '+919876543210'
+controller.getCountryCode('mobile');   // '+91'
+controller.getNationalNumber('mobile'); // '9876543210'
+controller.getPhone('mobile');         // (dial: '+91', number: '9876543210')
+controller.setPhone('mobile', dial: '+44', number: '7911 123456');
+```
+
+Prefill records (`initialData`, `setFormData`) accept either shape: `{"mobile": "+919876543210"}` or `{"mobile": "9876543210", "mobileCountryCode": "+91"}` (the code may also be an ISO code such as `"GB"`). `reset()` restores the prefilled country. `mobile` keeps the Indian rule (10 digits starting 6-9) for `+91` and accepts 6-14 digits for other countries. The picker is a searchable sheet that stays above the keyboard. Type a country name (`united`), a word inside it (`emirates`), an ISO code (`gb`) or a dial code with or without the plus (`+44`, `44`); the best matches come first. Each country shows its flag as an image (from the `country_flags` package, so it looks the same on every platform; the emoji `CountryDialCode.flag` is the fallback). `CountryDialCodes.all`, `lookup`, `resolve`, `search` and `split` expose the data.
 
 ## Extendable forms
 

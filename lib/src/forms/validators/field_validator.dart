@@ -338,8 +338,7 @@ class PresetValidator extends FieldValidator {
     if (FieldValidator.isEmpty(value)) return null;
     final spec = TextPresets.resolve(config.value?.toString());
     if (spec == null) return null; // `custom` is checked by `regex`.
-    return spec.isValid(value.toString())
-        ? null
-        : config.message ?? spec.message;
+    final text = value.toString();
+    return spec.isValid(text) ? null : config.message ?? spec.messageFor(text);
   }
 }

@@ -63,6 +63,10 @@ InputDecoration buildFieldDecoration(
   DynamicFormController controller, {
   String? errorText,
   Widget? suffix,
+
+  /// Replaces the prefix icon and `prefixText` (used by the country code
+  /// picker of phone fields).
+  Widget? prefix,
 }) {
   final theme = DynamicFormTheme.of(context);
   final style = resolveFieldStyle(context, field, controller);
@@ -80,10 +84,15 @@ InputDecoration buildFieldDecoration(
     helperText: field.helperText,
     errorText: errorText,
     isDense: style.dense ?? theme.dense,
-    prefixText: field.prefixText,
+    prefixText: prefix != null ? null : field.prefixText,
     suffixText: field.suffixText,
-    prefixIcon: FieldUtils.icon(prefixIcon) != null
-        ? Icon(FieldUtils.icon(prefixIcon))
+    prefixIcon:
+        prefix ??
+        (FieldUtils.icon(prefixIcon) != null
+            ? Icon(FieldUtils.icon(prefixIcon))
+            : null),
+    prefixIconConstraints: prefix != null
+        ? const BoxConstraints(minWidth: 0, minHeight: 0)
         : null,
     suffixIcon:
         suffix ??

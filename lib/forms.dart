@@ -23,6 +23,7 @@ export 'src/forms/fields/slider_fields.dart';
 export 'src/forms/fields/text_fields.dart';
 export 'src/forms/localization/form_localizations.dart';
 export 'src/forms/models/condition.dart';
+export 'src/forms/models/country_dial_code.dart';
 export 'src/forms/models/field_config.dart';
 export 'src/forms/models/field_enums.dart';
 export 'src/forms/models/field_overrides.dart';

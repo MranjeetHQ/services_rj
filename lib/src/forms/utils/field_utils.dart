@@ -10,6 +10,22 @@ import '../models/text_preset.dart';
 class FieldUtils {
   const FieldUtils._();
 
+  /// Whether [f] is a phone input with the optional country code picker
+  /// (`"countryCode": true`). See `DynamicTextField`.
+  static bool hasCountryCode(FieldConfig f) {
+    final flag = f.ex<Object>('countryCode');
+    if (flag == null || flag == false) return false;
+    final preset = TextPreset.tryParse(f.preset);
+    return f.type == FieldType.phone ||
+        preset == TextPreset.mobile ||
+        preset == TextPreset.phone;
+  }
+
+  /// Key that holds the country code when a phone field is reported in the
+  /// `separate` format: `countryCodeKey`, else `<name or id>CountryCode`.
+  static String countryCodeKey(FieldConfig f) =>
+      f.ex<String>('countryCodeKey') ?? '${f.name ?? f.id}CountryCode';
+
   /// Resolves a keyboard type from JSON (falls back per field type).
   static TextInputType keyboardType(FieldConfig f) {
     switch (f.keyboardType ?? TextPresets.resolve(f.preset)?.keyboard) {

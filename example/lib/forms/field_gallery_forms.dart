@@ -368,7 +368,13 @@ const Map<String, dynamic> layoutGalleryForm = {
       'style': {'containerColor': '#E6F0F5'},
       'fields': [
         {'type': 'text', 'id': 'shoreName', 'label': 'Name'},
-        {'type': 'phone', 'id': 'shorePhone', 'label': 'Phone'},
+        {
+          'type': 'phone',
+          'id': 'shorePhone',
+          'label': 'Phone',
+          'countryCode': true,
+          'helperText': 'Optional country code picker',
+        },
       ],
     },
     {

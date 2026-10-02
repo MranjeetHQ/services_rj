@@ -32,6 +32,8 @@ class FormLocalizations {
       'submit': 'Submit',
       'select': 'Select',
       'search': 'Search',
+      'noResults': 'No results',
+      'searchCountry': 'Search country or code',
       'discardTitle': 'Discard changes?',
       'discardMessage':
           'You have unsaved changes. Going back will discard them.',
@@ -75,6 +77,8 @@ class FormLocalizations {
       'submit': 'जमा करें',
       'select': 'चुनें',
       'search': 'खोजें',
+      'noResults': 'कोई परिणाम नहीं',
+      'searchCountry': 'देश या कोड खोजें',
       'discardTitle': 'परिवर्तन हटाएँ?',
       'discardMessage':
           'आपके पास सहेजे नहीं गए परिवर्तन हैं। वापस जाने पर वे हट जाएँगे।',
@@ -118,6 +122,8 @@ class FormLocalizations {
       'submit': 'إرسال',
       'select': 'اختر',
       'search': 'بحث',
+      'noResults': 'لا توجد نتائج',
+      'searchCountry': 'ابحث عن الدولة أو الرمز',
       'discardTitle': 'تجاهل التغييرات؟',
       'discardMessage': 'لديك تغييرات غير محفوظة. الرجوع سيؤدي إلى تجاهلها.',
       'discard': 'تجاهل',
@@ -160,6 +166,8 @@ class FormLocalizations {
       'submit': 'Enviar',
       'select': 'Seleccionar',
       'search': 'Buscar',
+      'noResults': 'Sin resultados',
+      'searchCountry': 'Buscar país o código',
       'discardTitle': '¿Descartar cambios?',
       'discardMessage': 'Tienes cambios sin guardar. Volver los descartará.',
       'discard': 'Descartar',
@@ -202,6 +210,8 @@ class FormLocalizations {
       'submit': 'Envoyer',
       'select': 'Sélectionner',
       'search': 'Rechercher',
+      'noResults': 'Aucun résultat',
+      'searchCountry': 'Rechercher un pays ou un indicatif',
       'discardTitle': 'Abandonner les modifications ?',
       'discardMessage':
           'Vous avez des modifications non enregistrées. Revenir les supprimera.',
@@ -245,6 +255,8 @@ class FormLocalizations {
       'submit': 'Absenden',
       'select': 'Auswählen',
       'search': 'Suchen',
+      'noResults': 'Keine Ergebnisse',
+      'searchCountry': 'Land oder Vorwahl suchen',
       'discardTitle': 'Änderungen verwerfen?',
       'discardMessage':
           'Sie haben ungespeicherte Änderungen. Zurückgehen verwirft sie.',

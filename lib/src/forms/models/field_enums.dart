@@ -285,6 +285,19 @@ enum LabelPosition {
   static LabelPosition? fromString(Object? raw) => _byName(values, raw);
 }
 
+/// How the controller reports a phone field that has a country code picker
+/// (`getFormData`, `onChanged`, `onSubmit`).
+enum PhoneFormat {
+  /// One value with the code in front: `{"mobile": "+919876543210"}`.
+  combined,
+
+  /// Two values: `{"mobile": "9876543210", "mobileCountryCode": "+91"}`.
+  separate;
+
+  /// Parses a phone format name.
+  static PhoneFormat? fromString(Object? raw) => _byName(values, raw);
+}
+
 /// Where an `image` field picks from.
 enum MediaSource {
   /// Photo library only.

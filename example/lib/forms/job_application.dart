@@ -20,7 +20,7 @@ const Map<String, dynamic> jobApplicationForm = {
           'type': 'phone',
           'id': 'mobile',
           'label': 'Mobile number',
-          'prefixText': '+91 ',
+          'countryCode': 'IN',
           'validators': ['required', 'phone'],
         },
         {

@@ -1,3 +1,4 @@
+import 'country_dial_code.dart';
 import 'field_enums.dart';
 
 /// Ready-made behaviour for a text input: keyboard, allowed characters,
@@ -80,6 +81,9 @@ class TextPresetSpec {
     this.maxLength,
     this.allowedChars,
     this.unicode = false,
+    this.nationalPatterns,
+    this.otherNationalPattern,
+    this.otherMessage,
   });
 
   /// Error shown when the value is invalid.
@@ -116,8 +120,39 @@ class TextPresetSpec {
   /// Compile [pattern] and [allowedChars] with Unicode support.
   final bool unicode;
 
+  /// For numbers stored with a country code (`+919876543210`): the national
+  /// number pattern per dial code. Codes not listed use
+  /// [otherNationalPattern].
+  final Map<String, String>? nationalPatterns;
+
+  /// National number pattern for dial codes missing from
+  /// [nationalPatterns]; `null` accepts any national number.
+  final String? otherNationalPattern;
+
+  /// Error for a number with another country's code. Defaults to [message].
+  final String? otherMessage;
+
+  /// True when [value] carries a country code this spec has rules for.
+  bool _isInternational(String value) =>
+      nationalPatterns != null && value.trim().startsWith('+');
+
+  /// The message to show for the invalid [value].
+  String messageFor(String value) {
+    if (_isInternational(value)) {
+      final dial = CountryDialCodes.split(value).dial;
+      if (dial != null && nationalPatterns!.containsKey(dial)) return message;
+      return otherMessage ?? message;
+    }
+    return message;
+  }
+
   /// Whether [value] satisfies this spec. Empty values are valid.
   bool isValid(String value) {
+    if (_isInternational(value)) {
+      final parts = CountryDialCodes.split(value);
+      final pattern = nationalPatterns![parts.dial] ?? otherNationalPattern;
+      return pattern == null || RegExp(pattern).hasMatch(parts.national);
+    }
     var v = (normalize?.call(value) ?? value).trim();
     if (textCase == TextCase.upper) v = v.toUpperCase();
     if (textCase == TextCase.lower) v = v.toLowerCase();
@@ -181,6 +216,9 @@ class TextPresets {
     TextPreset.mobile: const TextPresetSpec(
       message: 'Enter a 10-digit mobile number starting with 6-9',
       pattern: r'^[6-9]\d{9}$',
+      nationalPatterns: {'+91': r'^[6-9]\d{9}$'},
+      otherNationalPattern: r'^\d{6,14}$',
+      otherMessage: 'Enter a valid mobile number',
       allowedChars: r'\d',
       keyboard: KeyboardKind.phone,
       maxLength: 10,

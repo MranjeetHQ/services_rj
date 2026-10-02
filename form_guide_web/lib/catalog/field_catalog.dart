@@ -145,13 +145,33 @@ const List<FieldDoc> fieldCatalog = [
   FieldDoc(
     type: FieldType.phone,
     category: FieldCategory.text,
-    summary: 'Phone keyboard; allows digits, `+`, spaces, dashes, brackets.',
-    valueType: 'String',
+    summary:
+        'Phone keyboard; allows digits, `+`, spaces, dashes, brackets. Add '
+        '`countryCode` for an optional country code picker.',
+    valueType: 'String (`+<code><digits>` when `countryCode` is on)',
+    keys: {
+      'countryCode':
+          '`true` or a default country (`"IN"`, `"+44"`) to show a country '
+          'code picker, searchable by country name, ISO or dial code. The value becomes `+919876543210`; read it split '
+          'with `controller.getPhone(id)`. Also works on text fields using '
+          'the `mobile` or `phone` preset.',
+      'countryCodes':
+          'Limit the picker to these ISO or dial codes, in this order, e.g. '
+          '`["IN", "US", "+44"]`.',
+      'phoneFormat':
+          '`combined` (default): one value `+919876543210`. `separate`: the '
+          'number and its code under two keys, `mobile` and '
+          '`mobileCountryCode`. Overrides the controller default.',
+      'countryCodeKey':
+          'Name of the code key in the `separate` format (default '
+          '`<id>CountryCode`).',
+    },
     example: {
       'type': 'phone',
       'id': 'mobile',
       'label': 'Mobile',
-      'prefixText': '+91 ',
+      'countryCode': 'IN',
+      'countryCodes': ['IN', 'US', 'GB', 'AE', 'SG'],
       'validators': ['phone'],
     },
   ),

@@ -54,6 +54,24 @@ const Map<String, dynamic> textPresetsLabForm = {
     },
     {
       'type': 'text',
+      'id': 'mobileIntl',
+      'label': 'Mobile with country code',
+      'preset': 'mobile',
+      'countryCode': true,
+      'helperText':
+          'Optional picker; +91 keeps the 6-9 rule, others 6-14 digits',
+    },
+    {
+      'type': 'phone',
+      'id': 'officeIntl',
+      'label': 'Office phone (limited countries)',
+      'countryCode': 'GB',
+      'countryCodes': ['IN', 'GB', 'US', 'AE', 'SG'],
+      'phoneFormat': 'separate',
+      'helperText': 'phoneFormat separate: number + CountryCode key',
+    },
+    {
+      'type': 'text',
       'id': 'landline',
       'label': 'Phone number',
       'preset': 'phone',

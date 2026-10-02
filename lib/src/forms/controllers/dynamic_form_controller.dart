@@ -1,13 +1,16 @@
 import 'package:flutter/widgets.dart';
 import '../conditions/condition_evaluator.dart';
 import '../localization/form_localizations.dart';
+import '../models/country_dial_code.dart';
 import '../models/field_config.dart';
+import '../models/field_enums.dart';
 import '../models/field_overrides.dart';
 import '../models/field_type.dart';
 import '../models/form_config.dart';
 import '../models/option_item.dart';
 import '../models/text_preset.dart';
 import '../models/validator_config.dart';
+import '../utils/field_utils.dart';
 import '../validators/field_validator.dart';
 import '../validators/validator_registry.dart';
 import 'field_state.dart';
@@ -26,9 +29,17 @@ class DynamicFormController extends ChangeNotifier {
   DynamicFormController({
     String locale = 'en',
     this.optionsLoader,
+    this.phoneFormat = PhoneFormat.combined,
     Map<String, CustomValidatorFn> customValidators = const {},
   }) : l10n = FormLocalizations(locale),
        _customValidators = Map.of(customValidators);
+
+  /// How phone fields with a country code picker appear in
+  /// [getFormData], `onChanged` and `onSubmit`: one `+919876543210` value
+  /// ([PhoneFormat.combined], default) or the number and its code under two
+  /// keys ([PhoneFormat.separate]). A field's own `phoneFormat` key wins over
+  /// this, and [getFormData]'s `phoneFormat` argument wins over both.
+  final PhoneFormat phoneFormat;
 
   /// Localized messages used by validators.
   final FormLocalizations l10n;
@@ -124,9 +135,29 @@ class DynamicFormController extends ChangeNotifier {
   Map<String, dynamic> get initialData => Map.unmodifiable(_initialData);
   Map<String, dynamic> _initialData = {};
 
-  Object? _initialFor(FieldConfig config) => _initialData.containsKey(config.id)
-      ? _initialData[config.id]
-      : (config.initialValue ?? config.defaultValue);
+  Object? _initialFor(FieldConfig config) {
+    if (!_initialData.containsKey(config.id)) {
+      return config.initialValue ?? config.defaultValue;
+    }
+    final value = _initialData[config.id];
+    // Records may hold a phone as separate number + country code keys.
+    return FieldUtils.hasCountryCode(config)
+        ? _joinPhone(value, _initialData[FieldUtils.countryCodeKey(config)])
+        : value;
+  }
+
+  /// `+<code><digits>` from a national [number] and a country [code]; the
+  /// number unchanged when it already carries a code or there is none.
+  static Object? _joinPhone(Object? number, Object? code) {
+    final n = number?.toString();
+    final c = code?.toString().trim();
+    if (n == null || n.isEmpty || c == null || c.isEmpty) return number;
+    if (n.trim().startsWith('+')) return number;
+    final dial =
+        CountryDialCodes.lookup(c)?.dial ?? (c.startsWith('+') ? c : '+$c');
+    final digits = n.replaceAll(RegExp(r'[^\d]'), '');
+    return digits.isEmpty ? null : '$dial$digits';
+  }
 
   /// Attaches a parsed form, optionally prefilled with [initialData] (an
   /// existing record for edit mode). Safe to call again with new JSON —
@@ -303,7 +334,14 @@ class DynamicFormController extends ChangeNotifier {
 
   /// Current form data for **visible** fields (hidden-type fields included;
   /// conditionally hidden fields excluded). Pass [includeHidden] for all.
-  Map<String, dynamic> getFormData({bool includeHidden = false}) {
+  ///
+  /// [phoneFormat] overrides how phone fields with a country code picker are
+  /// reported (see [DynamicFormController.phoneFormat]); by default each
+  /// field's `phoneFormat` key, else the controller's, decides.
+  Map<String, dynamic> getFormData({
+    bool includeHidden = false,
+    PhoneFormat? phoneFormat,
+  }) {
     final data = <String, dynamic>{};
     for (final id in _order) {
       final s = _states[id]!;
@@ -311,7 +349,29 @@ class DynamicFormController extends ChangeNotifier {
       if (includeHidden ||
           s.visible.value ||
           s.config.type == FieldType.hidden) {
-        data[s.config.name ?? id] = s.value.value;
+        final key = s.config.name ?? id;
+        var value = s.value.value;
+        if (s.config.type == FieldType.repeater && phoneFormat != null) {
+          value = [
+            for (final e in s.entries.value)
+              e.controller.getFormData(
+                includeHidden: includeHidden,
+                phoneFormat: phoneFormat,
+              ),
+          ];
+        }
+        final format =
+            phoneFormat ??
+            PhoneFormat.fromString(s.config.ex<String>('phoneFormat')) ??
+            this.phoneFormat;
+        if (format == PhoneFormat.separate &&
+            FieldUtils.hasCountryCode(s.config)) {
+          final parts = CountryDialCodes.split(value?.toString());
+          data[key] = value == null ? null : parts.national;
+          data[FieldUtils.countryCodeKey(s.config)] = parts.dial;
+        } else {
+          data[key] = value;
+        }
       }
     }
     return data;
@@ -323,6 +383,17 @@ class DynamicFormController extends ChangeNotifier {
   /// the data becomes the pristine baseline — the form stays clean (no
   /// discard dialog until the user actually edits) and [reset] restores it.
   void setFormData(Map<String, dynamic> data, {bool asInitial = false}) {
+    // Phone fields may arrive as separate number + country code keys.
+    data = {
+      ...data,
+      for (final s in _states.values)
+        if (FieldUtils.hasCountryCode(s.config) &&
+            data.containsKey(s.config.id))
+          s.config.id: _joinPhone(
+            data[s.config.id],
+            data[FieldUtils.countryCodeKey(s.config)],
+          ),
+    };
     data.forEach((id, value) {
       final s = _states[id];
       if (s == null) return;
@@ -422,7 +493,10 @@ class DynamicFormController extends ChangeNotifier {
       s.error.value = null;
       return null;
     }
-    final data = getFormData(includeHidden: true);
+    final data = getFormData(
+      includeHidden: true,
+      phoneFormat: PhoneFormat.combined,
+    );
     String? error;
     for (final v in _validatorsFor(s)) {
       error = v.validate(s.value.value, data, l10n);
@@ -651,6 +725,7 @@ class DynamicFormController extends ChangeNotifier {
     final child = DynamicFormController(
       locale: l10n.locale,
       optionsLoader: optionsLoader,
+      phoneFormat: phoneFormat,
       customValidators: _customValidators,
     ).._parent = this;
     child.attach(
@@ -738,7 +813,10 @@ class DynamicFormController extends ChangeNotifier {
   // ----------------------------------------------------------- conditions
 
   void _reevaluateConditions() {
-    final data = getFormData(includeHidden: true);
+    final data = getFormData(
+      includeHidden: true,
+      phoneFormat: PhoneFormat.combined,
+    );
     for (final s in _states.values) {
       final c = s.config;
       if (c.visibleWhen != null) {
@@ -774,7 +852,7 @@ class DynamicFormController extends ChangeNotifier {
     try {
       final options = await optionsLoader!(
         id,
-        getFormData(includeHidden: true),
+        getFormData(includeHidden: true, phoneFormat: PhoneFormat.combined),
       );
       if (!_disposed && _states.containsKey(id)) {
         s.options.value = options;

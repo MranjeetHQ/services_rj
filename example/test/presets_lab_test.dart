@@ -38,7 +38,9 @@ void main() {
     // Fields are matched to inputs by their order in the form.
     final inputs = find.byType(TextField);
     final order = controller.fieldOrder
-        .where((id) => controller.state(id).config.preset != null)
+        .where(
+          (id) => controller.state(id).config.type != FieldType.sectionHeader,
+        )
         .toList();
     Future<void> enter(String id, String text) async {
       await tester.enterText(inputs.at(order.indexOf(id)), text);

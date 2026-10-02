@@ -446,6 +446,7 @@ final Map<String, List<String>> jsonEnumDocs = {
   ],
   'textCase (TextCase)': [for (final v in TextCase.values) v.name],
   'preset (TextPreset)': [for (final v in TextPreset.values) v.name],
+  'phoneFormat (PhoneFormat)': [for (final v in PhoneFormat.values) v.name],
   'optionLayout (OptionLayout)': [for (final v in OptionLayout.values) v.name],
   'style.labelBehavior (LabelBehavior)': [
     for (final v in LabelBehavior.values) v.name,
