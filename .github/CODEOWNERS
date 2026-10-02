@@ -1,0 +1,7 @@
+# Every change needs a review from the code owner before it can merge
+# (enforced by the branch ruleset, see CONTRIBUTING.md).
+# To let a maintainer merge, add their GitHub handle after @MranjeetHQ.
+*                       @MranjeetHQ
+/.github/               @MranjeetHQ
+/lib/src/core/          @MranjeetHQ
+/lib/src/networks/      @MranjeetHQ

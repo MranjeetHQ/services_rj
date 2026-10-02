@@ -119,13 +119,15 @@ class FieldWrapper extends StatelessWidget {
           ],
         );
         if (style.containerColor == null) return group;
-        return Container(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-          decoration: BoxDecoration(
-            color: style.containerColor,
-            borderRadius: BorderRadius.circular(style.containerRadius ?? 12),
+        // A Material (not a decorated Container) so ListTiles inside paint
+        // their ink and background correctly.
+        return Material(
+          color: style.containerColor,
+          borderRadius: BorderRadius.circular(style.containerRadius ?? 12),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+            child: group,
           ),
-          child: group,
         );
       case FieldType.repeater:
         return DynamicRepeaterField(field: field, controller: controller);
