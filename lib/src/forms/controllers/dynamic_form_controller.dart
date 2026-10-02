@@ -6,6 +6,7 @@ import '../models/field_overrides.dart';
 import '../models/field_type.dart';
 import '../models/form_config.dart';
 import '../models/option_item.dart';
+import '../models/text_preset.dart';
 import '../models/validator_config.dart';
 import '../validators/field_validator.dart';
 import '../validators/validator_registry.dart';
@@ -377,7 +378,30 @@ class DynamicFormController extends ChangeNotifier {
       list.add(MaxLengthValidator(_cfg('maxLength', s.config.maxLength)));
     }
     if (s.config.regex != null) {
-      list.add(RegexValidator(_cfg('regex', s.config.regex)));
+      list.add(
+        RegexValidator(
+          ValidatorConfig(
+            type: 'regex',
+            value: s.config.regex,
+            // For `preset: custom` the regex is the preset's rule.
+            message: TextPreset.tryParse(s.config.preset) == TextPreset.custom
+                ? s.config.presetMessage
+                : null,
+          ),
+        ),
+      );
+    }
+    if (s.config.preset != null &&
+        TextPresets.resolve(s.config.preset) != null) {
+      list.add(
+        PresetValidator(
+          ValidatorConfig(
+            type: 'preset',
+            value: s.config.preset,
+            message: s.config.presetMessage,
+          ),
+        ),
+      );
     }
     if (s.config.minItems != null) {
       list.add(MinItemsValidator(_cfg('minItems', s.config.minItems)));

@@ -73,7 +73,7 @@ const Map<String, dynamic> stylingLabForm = {
     {
       'type': 'textarea',
       'id': 'remarks',
-      'label': 'Wrapped in a card via FieldOverrides.wrapper',
+      'label': 'Remarks (card wrapper)',
       'maxLines': 3,
       'tooltip': 'Anything the courier should know',
     },

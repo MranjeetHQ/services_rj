@@ -5,6 +5,8 @@
 * **Extendable forms**: new `repeater` type for add / remove / reorder entries with `minItems` / `maxItems`; `allowCustomOptions` lets users add their own option; `addOption`, `removeOption` and `onOptionAdded`; `minItems` / `maxItems` validators.
 * **Per-field customization**: `prefixText`, `suffixText`, `textCase`, `maxLines`, `minLines`, `showCounter`, `tooltip`, `optionLayout` + `columns`, option `description`; style keys `activeColor`, `iconColor`, `cursorColor`, `textAlign`, `helperStyle`, `errorStyle`, `containerColor`, `containerRadius`. `FieldOverrides` (per id or per type) can replace the widget, style, decoration, option rendering, wrapper or text.
 * **Extensibility**: `ConditionEvaluator.registerOperator`, `FieldUtils.registerIcon`, `toJson()` on every config model.
+* **Text presets**: `"preset"` on a text field sets keyboard, allowed characters, case, length, hint, icon and a format check in one key. Built in: `name`, `mobile`, `phone`, `pan`, `aadhaar` (Verhoeff checksum), `gst` (check character), `ifsc`, `pincode`, `vehicleNumber`, `voterId`, `passport`, `upiId`, and `custom` (your own `regex` + `presetMessage`). Add reusable ones with `TextPresets.register`. New keys `preset` and `presetMessage`, new `TextPreset` enum and `PresetValidator`.
+* **Labels**: fixed the floating label of outlined fields being cut off at the top (every field was wrapped in a clipping reveal animation). New style key `labelPosition` (`floating`, `above`, `hidden`) and `LabelPosition` enum to show the label inside, above, or not at all. Segmented button labels no longer wrap mid-word.
 * **Example app** in `example/` and a guide website in `form_guide_web/`, kept in sync by tests.
 * SDK constraint relaxed to `^3.10.0`.
 

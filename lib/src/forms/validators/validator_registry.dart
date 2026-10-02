@@ -30,6 +30,7 @@ class ValidatorRegistry {
     'passwordStrength': PasswordStrengthValidator.new,
     'minItems': MinItemsValidator.new,
     'maxItems': MaxItemsValidator.new,
+    'preset': PresetValidator.new,
   };
 
   /// Registers (or overrides) a validator factory usable from JSON by name.

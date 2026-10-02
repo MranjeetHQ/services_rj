@@ -239,6 +239,35 @@ class StylingPage extends StatelessWidget {
           'in code. The most specific layer wins.',
       children: [
         KeyTable.docs(styleDocs),
+        const H2('Label position'),
+        const P(
+          'By default the label floats inside the border. Use '
+          '`labelPosition` to show it above the field (never clipped or '
+          'animated, good for long labels) or to hide it. `labelStyle` '
+          'changes its look in every mode.',
+        ),
+        const LivePreview(
+          json: {
+            'fields': [
+              {'type': 'text', 'id': 'floating', 'label': 'Floating (default)'},
+              {
+                'type': 'text',
+                'id': 'above',
+                'label': 'Label above the field',
+                'style': {
+                  'labelPosition': 'above',
+                  'labelStyle': {'color': '#00796B', 'fontWeight': 'bold'},
+                },
+              },
+              {
+                'type': 'text',
+                'id': 'hidden',
+                'label': 'Hidden label, shown as the hint',
+                'style': {'labelPosition': 'hidden'},
+              },
+            ],
+          },
+        ),
         const P(
           'Colours: `#RRGGBB`, `#AARRGGBB` or `0xAARRGGBB`. TextStyle '
           'maps: `fontSize`, `color`, `fontWeight` (`bold`, `w600`…), '

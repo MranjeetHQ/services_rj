@@ -103,6 +103,24 @@ const List<KeyDoc> fieldPropertyDocs = [
     'Shorthand for a `regex` validator.',
     group: 'Validation',
   ),
+  KeyDoc(
+    'preset',
+    'String',
+    'Ready-made text input: `name`, `mobile`, `phone`, `pan`, `aadhaar`, '
+        '`gst`, `ifsc`, `pincode`, `vehicleNumber`, `voterId`, `passport`, '
+        '`upiId`, `custom`, or a name added with `TextPresets.register`. Sets '
+        'keyboard, allowed characters, case and length, and adds a format '
+        'check. Your own `keyboardType`, `textCase`, `maxLength`, `hint` and '
+        '`prefixIcon` win.',
+    group: 'Validation',
+  ),
+  KeyDoc(
+    'presetMessage',
+    'String',
+    'Error shown when the `preset` check fails (for `custom`, when `regex` '
+        'does not match). Defaults to the preset message.',
+    group: 'Validation',
+  ),
   KeyDoc('obscureText', 'bool', 'Hide the typed text.', group: 'Text input'),
   KeyDoc(
     'maxLines',
@@ -346,6 +364,13 @@ const List<KeyDoc> styleDocs = [
         'right/bottom or horizontal/vertical.',
   ),
   KeyDoc('labelBehavior', 'auto | always | never', 'Floating label behaviour.'),
+  KeyDoc(
+    'labelPosition',
+    'floating | above | hidden',
+    'Where the label shows: inside the border and floating (default), as a '
+        'static label above the field, or hidden (the label text becomes the '
+        'hint). Style it with `labelStyle`.',
+  ),
   KeyDoc('textStyle', 'TextStyle', 'Typed text.'),
   KeyDoc('labelStyle', 'TextStyle', 'Label (also group / slider titles).'),
   KeyDoc('hintStyle', 'TextStyle', 'Hint.'),
@@ -420,9 +445,13 @@ final Map<String, List<String>> jsonEnumDocs = {
     for (final v in InputActionKind.values) v.name,
   ],
   'textCase (TextCase)': [for (final v in TextCase.values) v.name],
+  'preset (TextPreset)': [for (final v in TextPreset.values) v.name],
   'optionLayout (OptionLayout)': [for (final v in OptionLayout.values) v.name],
   'style.labelBehavior (LabelBehavior)': [
     for (final v in LabelBehavior.values) v.name,
+  ],
+  'style.labelPosition (LabelPosition)': [
+    for (final v in LabelPosition.values) v.name,
   ],
   'style.variant (FieldStyleVariant)': [
     for (final v in FieldStyleVariant.values) v.name,

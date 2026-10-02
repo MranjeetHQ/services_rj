@@ -1,4 +1,5 @@
 import '../localization/form_localizations.dart';
+import '../models/text_preset.dart';
 import '../models/validator_config.dart';
 
 /// Signature of a programmatic custom validator. Return an error message or
@@ -320,4 +321,25 @@ class CustomValidator extends FieldValidator {
     Map<String, dynamic> formData,
     FormLocalizations l10n,
   ) => fn(value, formData);
+}
+
+/// `{"type": "preset", "value": "pan"}` — format check of a text preset.
+/// Added automatically for fields that set `preset`.
+class PresetValidator extends FieldValidator {
+  /// Creates a preset validator for the preset named in `config.value`.
+  const PresetValidator(super.config);
+
+  @override
+  String? validate(
+    Object? value,
+    Map<String, dynamic> formData,
+    FormLocalizations l10n,
+  ) {
+    if (FieldValidator.isEmpty(value)) return null;
+    final spec = TextPresets.resolve(config.value?.toString());
+    if (spec == null) return null; // `custom` is checked by `regex`.
+    return spec.isValid(value.toString())
+        ? null
+        : config.message ?? spec.message;
+  }
 }

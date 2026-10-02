@@ -532,7 +532,7 @@ final score = SharedPrefManager.getData<int>('score');
 
 ### 5. Dynamic Forms
 
-Build complete forms from JSON — 53 field types, validation, conditional logic, multi-step wizards, edit mode, **enum-driven options**, **extendable (repeatable) sections**, user-addable options and per-field styling. Full reference: [docs/forms.md](docs/forms.md). Interactive guide: [`form_guide_web/`](form_guide_web/). Demo app: [`example/`](example/).
+Build complete forms from JSON — 53 field types, validation (including one-key **text presets** for PAN, Aadhaar, GST, mobile, IFSC and more), conditional logic, multi-step wizards, edit mode, **enum-driven options**, **extendable (repeatable) sections**, user-addable options and per-field styling. Full reference: [docs/forms.md](docs/forms.md). Interactive guide: [`form_guide_web/`](form_guide_web/). Demo app: [`example/`](example/).
 
 ```dart
 enum MealChoice { vegetarian, vegan, nonVegetarian }

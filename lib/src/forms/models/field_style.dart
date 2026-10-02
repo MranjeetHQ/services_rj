@@ -60,6 +60,7 @@ class FieldStyleConfig {
     this.dense,
     this.contentPadding,
     this.labelBehavior,
+    this.labelPosition,
     this.textStyle,
     this.labelStyle,
     this.hintStyle,
@@ -88,6 +89,7 @@ class FieldStyleConfig {
       dense: json['dense'] as bool?,
       contentPadding: parseEdgeInsets(json['contentPadding']),
       labelBehavior: LabelBehavior.fromString(json['labelBehavior']),
+      labelPosition: LabelPosition.fromString(json['labelPosition']),
       textStyle: parseTextStyle(json['textStyle']),
       labelStyle: parseTextStyle(json['labelStyle']),
       hintStyle: parseTextStyle(json['hintStyle']),
@@ -116,6 +118,7 @@ class FieldStyleConfig {
     'dense',
     'contentPadding',
     'labelBehavior',
+    'labelPosition',
     'textStyle',
     'labelStyle',
     'hintStyle',
@@ -155,6 +158,9 @@ class FieldStyleConfig {
 
   /// Where the floating label sits.
   final LabelBehavior? labelBehavior;
+
+  /// Whether the label floats inside the field, sits above it, or is hidden.
+  final LabelPosition? labelPosition;
 
   /// Style of the entered text.
   final TextStyle? textStyle;
@@ -208,6 +214,7 @@ class FieldStyleConfig {
         dense: l.dense ?? r.dense,
         contentPadding: l.contentPadding ?? r.contentPadding,
         labelBehavior: l.labelBehavior ?? r.labelBehavior,
+        labelPosition: l.labelPosition ?? r.labelPosition,
         textStyle: l.textStyle ?? r.textStyle,
         labelStyle: l.labelStyle ?? r.labelStyle,
         hintStyle: l.hintStyle ?? r.hintStyle,
@@ -237,6 +244,7 @@ class FieldStyleConfig {
     if (contentPadding != null)
       'contentPadding': edgeInsetsToJson(contentPadding!),
     if (labelBehavior != null) 'labelBehavior': labelBehavior!.name,
+    if (labelPosition != null) 'labelPosition': labelPosition!.name,
     if (textStyle != null) 'textStyle': textStyleToJson(textStyle!),
     if (labelStyle != null) 'labelStyle': textStyleToJson(labelStyle!),
     if (hintStyle != null) 'hintStyle': textStyleToJson(hintStyle!),

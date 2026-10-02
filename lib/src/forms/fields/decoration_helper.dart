@@ -4,6 +4,7 @@ import '../controllers/dynamic_form_controller.dart';
 import '../models/field_config.dart';
 import '../models/field_enums.dart';
 import '../models/field_style.dart';
+import '../models/text_preset.dart';
 import '../theme/dynamic_form_theme.dart';
 import '../utils/field_utils.dart';
 
@@ -65,17 +66,24 @@ InputDecoration buildFieldDecoration(
 }) {
   final theme = DynamicFormTheme.of(context);
   final style = resolveFieldStyle(context, field, controller);
+  final preset = TextPresets.resolve(field.preset);
+  final prefixIcon = field.prefixIcon ?? preset?.icon;
+
+  final position = style.labelPosition ?? LabelPosition.floating;
+  // `above` draws the label outside the field (see FieldWrapper); `hidden`
+  // shows the label text as the hint instead.
+  final hint = field.hint ?? preset?.hint;
 
   var decoration = InputDecoration(
-    labelText: field.label,
-    hintText: field.hint,
+    labelText: position == LabelPosition.floating ? field.label : null,
+    hintText: position == LabelPosition.hidden ? hint ?? field.label : hint,
     helperText: field.helperText,
     errorText: errorText,
     isDense: style.dense ?? theme.dense,
     prefixText: field.prefixText,
     suffixText: field.suffixText,
-    prefixIcon: FieldUtils.icon(field.prefixIcon) != null
-        ? Icon(FieldUtils.icon(field.prefixIcon))
+    prefixIcon: FieldUtils.icon(prefixIcon) != null
+        ? Icon(FieldUtils.icon(prefixIcon))
         : null,
     suffixIcon:
         suffix ??

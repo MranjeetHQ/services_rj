@@ -659,7 +659,10 @@ class DynamicGroupField extends StatelessWidget {
                           o,
                           selected.contains(o.value),
                         ) ??
-                        Text(o.label),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(o.label, maxLines: 1, softWrap: false),
+                        ),
                     icon: _optionIcon(o),
                     enabled: o.enabled,
                   ),

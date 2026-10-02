@@ -11,6 +11,7 @@ import '../fields/selection_fields.dart';
 import '../fields/slider_fields.dart';
 import '../fields/text_fields.dart';
 import '../models/field_config.dart';
+import '../models/field_enums.dart';
 import '../models/field_type.dart';
 import '../theme/dynamic_form_theme.dart';
 
@@ -141,6 +142,36 @@ class FieldWrapper extends StatelessWidget {
     }
   }
 
+  /// Field types drawn with an `InputDecoration`, whose label can be moved
+  /// above the field.
+  static bool _hasInputDecoration(FieldType type) => const {
+    FieldType.text,
+    FieldType.textarea,
+    FieldType.password,
+    FieldType.email,
+    FieldType.number,
+    FieldType.decimal,
+    FieldType.phone,
+    FieldType.url,
+    FieldType.search,
+    FieldType.otp,
+    FieldType.pin,
+    FieldType.readOnly,
+    FieldType.richText,
+    FieldType.markdown,
+    FieldType.htmlEditor,
+    FieldType.date,
+    FieldType.time,
+    FieldType.datetime,
+    FieldType.dropdown,
+    FieldType.multiselect,
+    FieldType.country,
+    FieldType.state,
+    FieldType.city,
+    FieldType.autocomplete,
+    FieldType.typeahead,
+  }.contains(type);
+
   @override
   Widget build(BuildContext context) {
     if (field.type == FieldType.hidden || field.id.isEmpty) {
@@ -151,6 +182,18 @@ class FieldWrapper extends StatelessWidget {
     final overrides = controller.overridesFor(field);
     final effective = overrides?.apply(field) ?? field;
     Widget inner = _buildInner(context, effective);
+    if (_hasInputDecoration(effective.type) &&
+        resolveFieldStyle(context, effective, controller).labelPosition ==
+            LabelPosition.above) {
+      final label = buildFieldLabel(context, effective, controller);
+      if (label != null) {
+        inner = Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [label, inner],
+        );
+      }
+    }
     if (effective.tooltip != null) {
       inner = Tooltip(message: effective.tooltip, child: inner);
     }
@@ -163,7 +206,7 @@ class FieldWrapper extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         transitionBuilder: (child, animation) => FadeTransition(
           opacity: animation,
-          child: SizeTransition(sizeFactor: animation, child: child),
+          child: _RevealTransition(sizeFactor: animation, child: child),
         ),
         child: visible ? child : const SizedBox.shrink(),
       ),
@@ -179,5 +222,27 @@ class FieldWrapper extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Grows a child from zero height, like [SizeTransition], but clips only
+/// while the animation runs. A settled child is never clipped, so an outlined
+/// field's floating label (which sits half above its box) stays fully visible.
+class _RevealTransition extends AnimatedWidget {
+  const _RevealTransition({required this.sizeFactor, required this.child})
+    : super(listenable: sizeFactor);
+
+  final Animation<double> sizeFactor;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final settled = sizeFactor.value >= 1;
+    final aligned = Align(
+      alignment: Alignment.topCenter,
+      heightFactor: sizeFactor.value.clamp(0.0, 1.0),
+      child: child,
+    );
+    return settled ? aligned : ClipRect(child: aligned);
   }
 }

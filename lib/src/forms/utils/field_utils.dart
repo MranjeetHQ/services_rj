@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../models/field_config.dart';
 import '../models/field_enums.dart';
 import '../models/field_type.dart';
+import '../models/text_preset.dart';
 
 /// Shared helpers mapping JSON strings to Flutter types.
 class FieldUtils {
@@ -11,7 +12,7 @@ class FieldUtils {
 
   /// Resolves a keyboard type from JSON (falls back per field type).
   static TextInputType keyboardType(FieldConfig f) {
-    switch (f.keyboardType) {
+    switch (f.keyboardType ?? TextPresets.resolve(f.preset)?.keyboard) {
       case KeyboardKind.number:
         return TextInputType.number;
       case KeyboardKind.decimal:
@@ -57,7 +58,7 @@ class FieldUtils {
 
   /// Keyboard capitalization hint from [FieldConfig.textCase].
   static TextCapitalization capitalization(FieldConfig f) =>
-      switch (f.textCase) {
+      switch (f.textCase ?? TextPresets.resolve(f.preset)?.textCase) {
         TextCase.upper => TextCapitalization.characters,
         TextCase.words => TextCapitalization.words,
         TextCase.sentences => TextCapitalization.sentences,
@@ -65,16 +66,29 @@ class FieldUtils {
       };
 
   /// Input formatters per field type.
-  static List<TextInputFormatter> formatters(FieldConfig f) => [
+  static List<TextInputFormatter> formatters(FieldConfig f) {
+    final preset = TextPresets.resolve(f.preset);
+    final textCase = f.textCase ?? preset?.textCase;
+    final maxLength = f.maxLength ?? preset?.maxLength;
+    return [
+      if (preset?.allowedChars != null)
+        FilteringTextInputFormatter.allow(
+          RegExp('[${preset!.allowedChars}]', unicode: preset.unicode),
+        ),
+      ..._typeFormatters(f),
+      if (maxLength != null) LengthLimitingTextInputFormatter(maxLength),
+      if (textCase == TextCase.upper) _CaseFormatter(upper: true),
+      if (textCase == TextCase.lower) _CaseFormatter(upper: false),
+    ];
+  }
+
+  static List<TextInputFormatter> _typeFormatters(FieldConfig f) => [
     if (f.type == FieldType.number)
       FilteringTextInputFormatter.allow(RegExp(r'[\d-]')),
     if (f.type == FieldType.decimal)
       FilteringTextInputFormatter.allow(RegExp(r'[\d.\-]')),
     if (f.type == FieldType.phone)
       FilteringTextInputFormatter.allow(RegExp(r'[\d+\-\s()]')),
-    if (f.maxLength != null) LengthLimitingTextInputFormatter(f.maxLength),
-    if (f.textCase == TextCase.upper) _CaseFormatter(upper: true),
-    if (f.textCase == TextCase.lower) _CaseFormatter(upper: false),
   ];
 
   static final Map<String, IconData> _customIcons = {};

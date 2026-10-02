@@ -268,6 +268,23 @@ enum LabelBehavior {
   static LabelBehavior? fromString(Object? raw) => _byName(values, raw);
 }
 
+/// Where a field's label is shown (style key `labelPosition`).
+enum LabelPosition {
+  /// Inside the field border, floating up when focused or filled (default).
+  floating,
+
+  /// A static label above the field. Never clipped or animated, which also
+  /// suits dense layouts and long labels.
+  above,
+
+  /// No label. The label text becomes the hint so the field stays
+  /// understandable (and keeps its accessibility label).
+  hidden;
+
+  /// Parses a label position name.
+  static LabelPosition? fromString(Object? raw) => _byName(values, raw);
+}
+
 /// Where an `image` field picks from.
 enum MediaSource {
   /// Photo library only.

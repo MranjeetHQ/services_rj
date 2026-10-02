@@ -12,6 +12,12 @@ dependencies:
   services_rj:
     path: ../
 
+# permission_handler_android 14.x needs Android Gradle Plugin 9, which this
+# Flutter version's Android template (AGP 8.11) does not use. Remove the
+# override once the app moves to AGP 9.
+dependency_overrides:
+  permission_handler_android: 13.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

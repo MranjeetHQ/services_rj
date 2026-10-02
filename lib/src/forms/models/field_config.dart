@@ -55,6 +55,8 @@ class FieldConfig {
     this.minLines,
     this.showCounter = false,
     this.regex,
+    this.preset,
+    this.presetMessage,
     this.keyboardType,
     this.textInputAction,
     this.textCase,
@@ -128,6 +130,8 @@ class FieldConfig {
       minLines: (json['minLines'] as num?)?.toInt(),
       showCounter: json['showCounter'] as bool? ?? false,
       regex: json['regex'] as String?,
+      preset: json['preset']?.toString(),
+      presetMessage: json['presetMessage'] as String?,
       keyboardType: KeyboardKind.fromString(json['keyboardType']),
       textInputAction: InputActionKind.fromString(json['textInputAction']),
       textCase: TextCase.fromString(json['textCase']),
@@ -210,6 +214,8 @@ class FieldConfig {
     'minLines',
     'showCounter',
     'regex',
+    'preset',
+    'presetMessage',
     'keyboardType',
     'textInputAction',
     'textCase',
@@ -310,6 +316,15 @@ class FieldConfig {
 
   /// Regex pattern (validator shorthand).
   final String? regex;
+
+  /// Text preset name (a `TextPreset` or one added with
+  /// `TextPresets.register`): keyboard, allowed characters, case, length and
+  /// a format check such as PAN, Aadhaar or GST.
+  final String? preset;
+
+  /// Error shown when the [preset] check (or, for `custom`, the [regex])
+  /// fails. Defaults to the preset's own message.
+  final String? presetMessage;
 
   /// Keyboard to show (falls back per field type).
   final KeyboardKind? keyboardType;
@@ -453,6 +468,8 @@ class FieldConfig {
     if (minLines != null) 'minLines': minLines,
     if (showCounter) 'showCounter': true,
     if (regex != null) 'regex': regex,
+    if (preset != null) 'preset': preset,
+    if (presetMessage != null) 'presetMessage': presetMessage,
     if (keyboardType != null) 'keyboardType': keyboardType!.name,
     if (textInputAction != null) 'textInputAction': textInputAction!.name,
     if (textCase != null) 'textCase': textCase!.name,
@@ -529,6 +546,8 @@ class FieldConfig {
     minLines: minLines,
     showCounter: showCounter,
     regex: regex,
+    preset: preset,
+    presetMessage: presetMessage,
     keyboardType: keyboardType,
     textInputAction: textInputAction,
     textCase: textCase,

@@ -31,6 +31,7 @@ export 'src/forms/models/field_type.dart';
 export 'src/forms/models/form_config.dart';
 export 'src/forms/models/form_enum_registry.dart';
 export 'src/forms/models/option_item.dart';
+export 'src/forms/models/text_preset.dart';
 export 'src/forms/models/validator_config.dart';
 export 'src/forms/parser/form_parser.dart';
 export 'src/forms/theme/dynamic_form_theme.dart';

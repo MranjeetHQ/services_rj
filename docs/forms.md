@@ -44,7 +44,7 @@ Adapters (register with `FieldFactory.register`): `signature`, `qrScanner`, `bar
 
 ## Enums
 
-Every string option has a Dart enum: `ValidatorType`, `ConditionOperator`, `KeyboardKind`, `InputActionKind`, `TextCase`, `OptionLayout`, `LabelBehavior`, `FieldStyleVariant`, `MediaSource`. Each has a tolerant `fromString`.
+Every string option has a Dart enum: `ValidatorType`, `ConditionOperator`, `KeyboardKind`, `InputActionKind`, `TextCase`, `TextPreset`, `OptionLayout`, `LabelBehavior`, `LabelPosition`, `FieldStyleVariant`, `MediaSource`. Each has a tolerant `fromString`.
 
 Dart enums can supply options:
 
@@ -71,6 +71,47 @@ FieldConfig(
 )
 ```
 
+## Text presets
+
+`"preset"` configures a text field for a common Indian identifier in one key: keyboard, allowed characters, capitalization, length limit, placeholder, icon and a format check.
+
+| Preset | Rule |
+|---|---|
+| `name` | Letters of any script, spaces, `'`, `.`, `-` (2-60 characters) |
+| `mobile` | 10 digits starting with 6-9 |
+| `phone` | 7-15 digits, optional `+`, spaces, `-`, brackets |
+| `pan` | `ABCPE1234F` (valid holder-type letter) |
+| `aadhaar` | 12 digits, first digit 2-9, Verhoeff checksum (spaces allowed) |
+| `gst` | 15 characters, valid state code, check character |
+| `ifsc` | `HDFC0001234` |
+| `pincode` | 6 digits, not starting with 0 |
+| `vehicleNumber` | `MH12AB1234` |
+| `voterId` | 3 letters and 7 digits |
+| `passport` | Letter followed by 7 digits |
+| `upiId` | `name@bank` |
+| `custom` | Your own `regex`, reported with `presetMessage` |
+
+```json
+{"type": "text", "id": "pan", "label": "PAN", "preset": "pan", "required": true}
+{"type": "text", "id": "empId", "preset": "custom", "regex": "^EMP-\\d{4}$",
+ "presetMessage": "Use EMP-1234", "textCase": "upper", "maxLength": 8}
+```
+
+Empty values pass, so add `required` to make the field mandatory. The field's own `keyboardType`, `textCase`, `maxLength`, `hint` and `prefixIcon` win over the preset; `presetMessage` replaces the default error.
+
+Reusable presets of your own:
+
+```dart
+TextPresets.register('employeeId', TextPresetSpec(
+  message: 'Employee id looks like E-12345',
+  pattern: r'^E-\d{5}$',
+  textCase: TextCase.upper,
+  maxLength: 7,
+  check: (value) => true, // optional: checksums and other non-pattern rules
+));
+// JSON: {"type": "text", "id": "emp", "preset": "employeeId"}
+```
+
 ## Extendable forms
 
 **Repeater.** `fields` is the template for one entry. The value is `List<Map<String, dynamic>>`. Each entry validates on its own, and conditions inside an entry read that entry's data.
@@ -93,7 +134,7 @@ Controller: `addEntry`, `removeEntry`, `moveEntry`, `canAddEntry`, `canRemoveEnt
 
 Field keys: `prefixText`, `suffixText`, `prefixIcon`, `suffixIcon`, `textCase` (`upper`, `lower`, `words`, `sentences`), `keyboardType`, `textInputAction`, `maxLines` (`rows`), `minLines`, `maxLength` + `showCounter`, `tooltip`, `optionLayout` (`vertical`, `horizontal`, `wrap`, `grid`) + `columns`, `padding`, `margin`, `width`, `height`. Options take `label`, `value`, `icon`, `description`, `enabled`.
 
-`style` keys: `variant` (`outlined`, `rounded`, `filled`, `underline`, `none`), `borderRadius`, `fillColor`, `borderColor`, `focusedBorderColor`, `borderWidth`, `dense`, `contentPadding`, `labelBehavior`, `textStyle`, `labelStyle`, `hintStyle`, `helperStyle`, `errorStyle`, `iconColor`, `activeColor`, `cursorColor`, `textAlign`, `containerColor`, `containerRadius`.
+`style` keys: `variant` (`outlined`, `rounded`, `filled`, `underline`, `none`), `borderRadius`, `fillColor`, `borderColor`, `focusedBorderColor`, `borderWidth`, `dense`, `contentPadding`, `labelBehavior`, `labelPosition` (`floating`, `above`, `hidden`), `textStyle`, `labelStyle`, `hintStyle`, `helperStyle`, `errorStyle`, `iconColor`, `activeColor`, `cursorColor`, `textAlign`, `containerColor`, `containerRadius`.
 
 Styles merge in this order, most specific last: `DynamicFormThemeData.defaultFieldStyle`, form `style`, field `style`, then `FieldOverrides.style`.
 

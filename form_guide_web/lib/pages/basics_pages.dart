@@ -329,6 +329,80 @@ class ValidationPage extends StatelessWidget {
             ],
           },
         ),
+        const H2('Text presets (PAN, Aadhaar, GST, …)'),
+        const P(
+          'Set `preset` on a text field to get the right keyboard, allowed '
+          'characters, capitalization, length limit and a format check in '
+          'one key. Aadhaar uses the Verhoeff checksum and GST the check '
+          'character. Empty values pass, so add `required` when needed. '
+          'Your own `keyboardType`, `textCase`, `maxLength` and `hint` win '
+          'over the preset.',
+        ),
+        KeyTable(
+          headers: const ['Preset', 'Rule'],
+          rows: [
+            for (final p in TextPreset.values)
+              [
+                p.name,
+                TextPresets.builtIn[p]?.message ??
+                    'Your own `regex`, reported with `presetMessage`.',
+              ],
+          ],
+        ),
+        const LivePreview(
+          json: {
+            'fields': [
+              {
+                'type': 'text',
+                'id': 'fullName',
+                'label': 'Full name',
+                'preset': 'name',
+                'required': true,
+              },
+              {
+                'type': 'text',
+                'id': 'mobile',
+                'label': 'Mobile number',
+                'preset': 'mobile',
+                'required': true,
+              },
+              {'type': 'text', 'id': 'pan', 'label': 'PAN', 'preset': 'pan'},
+              {
+                'type': 'text',
+                'id': 'aadhaar',
+                'label': 'Aadhaar number',
+                'preset': 'aadhaar',
+              },
+              {
+                'type': 'text',
+                'id': 'gstin',
+                'label': 'GSTIN',
+                'preset': 'gst',
+                'presetMessage': 'That GSTIN does not look right',
+              },
+              {
+                'type': 'text',
+                'id': 'empId',
+                'label': 'Employee id',
+                'preset': 'custom',
+                'regex': r'^EMP-\d{4}$',
+                'presetMessage': 'Use the format EMP-1234',
+                'textCase': 'upper',
+                'maxLength': 8,
+              },
+            ],
+          },
+        ),
+        const CodeBlock(r'''
+// A reusable preset of your own, usable as {"preset": "employeeId"}
+TextPresets.register('employeeId', TextPresetSpec(
+  message: 'Employee id looks like E-12345',
+  pattern: r'^E-\d{5}$',
+  textCase: TextCase.upper,
+  maxLength: 7,
+  hint: 'E-12345',
+  // check: (value) => ... for rules a pattern cannot express (checksums)
+));'''),
         const H2('Typed Dart validators'),
         const CodeBlock('''
 FieldConfig(
