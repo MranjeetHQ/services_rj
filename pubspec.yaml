@@ -1,8 +1,15 @@
 name: services_rj
 description: A scalable Flutter utility package providing theme management, shared preferences, network layer, connectivity handling, logging, JSON-driven dynamic forms, and app configuration with production-ready architecture.
 version: 1.2.0
-repository: https://github.com/mranjeet/services_rj
-issue_tracker: https://github.com/mranjeet/services_rj/issues
+homepage: https://mranjeethq.github.io/services_rj/
+repository: https://github.com/MranjeetHQ/services_rj
+issue_tracker: https://github.com/MranjeetHQ/services_rj/issues
+topics:
+  - forms
+  - json
+  - networking
+  - caching
+  - theming
 
 environment:
   sdk: ^3.10.0

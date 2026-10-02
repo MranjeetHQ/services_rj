@@ -1,8 +1,12 @@
 # services_rj
 
+[![CI](https://github.com/MranjeetHQ/services_rj/actions/workflows/ci.yml/badge.svg)](https://github.com/MranjeetHQ/services_rj/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Live guide](https://img.shields.io/badge/guide-live-00796B.svg)](https://mranjeethq.github.io/services_rj/)
+
 A Flutter utility package that provides out‑of‑the‑box support for **networking** with **offline caching**, **encrypted storage**, **runtime permissions**, **JSON-driven dynamic forms**, **theming**, **button widgets**, **shared preferences**, and common app‑level helpers. One `AppController` switches every feature on or off.
 
-**Guides:** [AppController, caching and encryption](docs/app_controller.md) · [Permissions](docs/permissions.md) · [Dynamic forms](docs/forms.md) · [Form guide website](form_guide_web/) (with an element builder) · [Release notes](RELEASE_NOTES.md) · [QA report](docs/qa_report.md)
+**Guides:** [AppController, caching and encryption](docs/app_controller.md) · [Permissions](docs/permissions.md) · [Dynamic forms](docs/forms.md) · [Live form guide](https://mranjeethq.github.io/services_rj/) (with an element builder, source in [form_guide_web/](form_guide_web/)) · [Release notes](RELEASE_NOTES.md) · [QA report](docs/qa_report.md)
 
 ---
 
@@ -31,6 +35,8 @@ A Flutter utility package that provides out‑of‑the‑box support for **netwo
     - [SharedPrefManager](#sharedprefmanager)
     - [Other Helpers](#other-helpers)
   - [5. Dynamic Forms](#5-dynamic-forms)
+  - [6. AppController, caching and encryption](#6-appcontroller-caching-and-encryption)
+  - [7. Permissions](#7-permissions)
 - [Example](#example)
 
 ---
@@ -61,9 +67,17 @@ import 'package:services_rj/services_rj.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Features are opt-in. This app uses preferences and theme state.
-  await AppController.initialize(
-    features: const AppFeatures(sharedPref: true, theme: true),
+  await AppInitializer.initialize(
+    initializeSharedPref: true,
+    initializeTheme: true,
+    initializeNetwork: true,
+    apiConfig: ApiConfig(
+      baseUrl: 'https://jsonplaceholder.typicode.com',
+      printLogs: true,           // ← enable console logs
+      connectTimeout: 15000,
+      receiveTimeout: 15000,
+      sendTimeout: 15000,
+    ),
   );
 
   runApp(const MyApp());
@@ -102,6 +116,20 @@ class MyApp extends StatelessWidget {
   }
 }
 ```
+
+`AppInitializer` is still supported. It now forwards to `AppController`.
+
+### New: `AppController` (recommended for new apps)
+
+One switchboard for every feature: shared preferences, theme, networking, **API caching**, **AES-256-GCM encryption**, connectivity, logging and **permissions**. Features are opt-in:
+
+```dart
+await AppController.initialize(
+  features: const AppFeatures(sharedPref: true, theme: true),
+);
+```
+
+See [AppController, caching and encryption](docs/app_controller.md).
 
 ---
 
@@ -586,6 +614,61 @@ controller.addEntry('guests', data: {'guestName': 'Asha'});
 
 ---
 
+### 6. AppController, caching and encryption
+
+`AppController.initialize(...)` starts only the features you enable and exposes them through `AppController.instance`.
+
+| Feature | What it controls |
+|---|---|
+| `sharedPref` | `SharedPrefManager` |
+| `theme` | `AppThemeController` |
+| `network` | `DioService`, `ApiClient` (needs an `ApiConfig`) |
+| `apiCache` | Memory and disk response cache |
+| `encryption` | AES-256-GCM for preferences and cache files |
+| `connectivity` | Online and offline tracking |
+| `logger` / `networkLogs` | `AppLogger` and request / response logs |
+| `permissions` | `AppPermissionManager` |
+
+```dart
+await AppController.initialize(
+  features: const AppFeatures(
+    sharedPref: true,
+    theme: true,
+    network: true,
+    apiCache: true,
+    encryption: true,
+  ),
+  apiConfig: ApiConfig(baseUrl: 'https://api.example.com'),
+);
+
+final app = AppController.instance;
+await app.setEnabled(AppFeature.logger, false); // runtime switch
+```
+
+- **Caching**: GET responses are cached with stale-while-revalidate by default (`networkFirst`, `cacheFirst`, `cacheOnly` and `networkOnly` are available), served instantly when offline, shared between identical requests and invalidated after mutations.
+- **Encryption**: the 256-bit key lives in the Keychain or Keystore, preferences and cache files are encrypted, and tampered data is discarded.
+
+Details: [docs/app_controller.md](docs/app_controller.md).
+
+---
+
+### 7. Permissions
+
+A queued `AppPermissionManager` on top of `permission_handler`, with per-platform and per-Android-version mapping and an `ensure()` flow that explains, asks and offers settings.
+
+```dart
+await AppController.initialize(
+  features: const AppFeatures(permissions: true),
+);
+
+final status = await AppPermissionManager.instance.request(AppPermission.camera);
+if (status.isUsable) openCamera();
+```
+
+Platform setup and the full permission list: [docs/permissions.md](docs/permissions.md).
+
+---
+
 ## Example
 
 A complete app demonstrating all the features:
@@ -708,7 +791,9 @@ class HomePage extends StatelessWidget {
 
 ## Additional Information
 
-- **License**: MIT (see `LICENSE` file)
-- **Issues**: file them on the project's issue tracker
-- **Contributions**: PRs are welcome – please follow the existing code style and include tests where appropriate
-- **Maintainer**: [Author / Organisation name]
+- **License**: MIT, © 2026 Ranjit Makwana (see [LICENSE](LICENSE)). The form engine is based on MIT-licensed code by Rupesh Rajak, see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+- **Issues**: [github.com/MranjeetHQ/services_rj/issues](https://github.com/MranjeetHQ/services_rj/issues)
+- **Contributions**: PRs are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Security**: report vulnerabilities privately, see [SECURITY.md](SECURITY.md)
+- **Maintainer**: Ranjit Makwana · [LinkedIn](https://www.linkedin.com/in/makwanaranjit33/) · [GitHub](https://github.com/MranjeetHQ)
+- **Release notes**: [RELEASE_NOTES.md](RELEASE_NOTES.md) · [CHANGELOG.md](CHANGELOG.md)

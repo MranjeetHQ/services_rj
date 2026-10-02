@@ -81,71 +81,83 @@ class DynamicRepeaterField extends StatelessWidget {
                     ),
                   ),
                 for (var i = 0; i < entries.length; i++)
-                  Container(
+                  Padding(
                     key: ValueKey(entries[i].key),
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.fromLTRB(12, 4, 4, 0),
-                    decoration: BoxDecoration(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    // A Material (not a decorated Container) so ListTiles
+                    // inside paint their ink and background correctly.
+                    child: Material(
                       color: style.containerColor ?? scheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(
-                        style.containerRadius ?? 12,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          style.containerRadius ?? 12,
+                        ),
+                        side: BorderSide(color: scheme.outlineVariant),
                       ),
-                      border: Border.all(color: scheme.outlineVariant),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 4, 4, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Expanded(
-                              child: Text(
-                                _title(i),
-                                style: Theme.of(context).textTheme.labelLarge,
-                              ),
-                            ),
-                            if (field.reorderable && interactive) ...[
-                              IconButton(
-                                icon: const Icon(Icons.arrow_upward, size: 18),
-                                tooltip: l10n.message('moveUp'),
-                                onPressed: i == 0
-                                    ? null
-                                    : () => controller.moveEntry(
-                                        field.id,
-                                        i,
-                                        i - 1,
-                                      ),
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.arrow_downward,
-                                  size: 18,
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    _title(i),
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.labelLarge,
+                                  ),
                                 ),
-                                tooltip: l10n.message('moveDown'),
-                                onPressed: i == entries.length - 1
-                                    ? null
-                                    : () => controller.moveEntry(
-                                        field.id,
-                                        i,
-                                        i + 1,
-                                      ),
-                              ),
-                            ],
-                            IconButton(
-                              icon: const Icon(Icons.delete_outline),
-                              tooltip: l10n.message('removeEntry'),
-                              onPressed: canRemove
-                                  ? () => controller.removeEntry(field.id, i)
-                                  : null,
+                                if (field.reorderable && interactive) ...[
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.arrow_upward,
+                                      size: 18,
+                                    ),
+                                    tooltip: l10n.message('moveUp'),
+                                    onPressed: i == 0
+                                        ? null
+                                        : () => controller.moveEntry(
+                                            field.id,
+                                            i,
+                                            i - 1,
+                                          ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.arrow_downward,
+                                      size: 18,
+                                    ),
+                                    tooltip: l10n.message('moveDown'),
+                                    onPressed: i == entries.length - 1
+                                        ? null
+                                        : () => controller.moveEntry(
+                                            field.id,
+                                            i,
+                                            i + 1,
+                                          ),
+                                  ),
+                                ],
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline),
+                                  tooltip: l10n.message('removeEntry'),
+                                  onPressed: canRemove
+                                      ? () =>
+                                            controller.removeEntry(field.id, i)
+                                      : null,
+                                ),
+                              ],
                             ),
+                            for (final child in field.fields)
+                              FieldWrapper(
+                                key: ValueKey('${entries[i].key}.${child.id}'),
+                                field: child,
+                                controller: entries[i].controller,
+                              ),
                           ],
                         ),
-                        for (final child in field.fields)
-                          FieldWrapper(
-                            key: ValueKey('${entries[i].key}.${child.id}'),
-                            field: child,
-                            controller: entries[i].controller,
-                          ),
-                      ],
+                      ),
                     ),
                   ),
                 if (canAdd)
