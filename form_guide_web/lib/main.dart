@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'guide_enums.dart';
 import 'pages/advanced_pages.dart';
 import 'pages/basics_pages.dart';
+import 'pages/dropdowns_page.dart';
 import 'pages/elements_page.dart';
 
 void main() {
@@ -41,6 +42,12 @@ final List<GuideSection> guideSections = [
     'Field types',
     Icons.widgets_outlined,
     (_) => const FieldTypesPage(),
+  ),
+  GuideSection(
+    'dropdowns',
+    'Dropdowns & search',
+    Icons.manage_search,
+    (_) => const DropdownsPage(),
   ),
   GuideSection(
     'properties',

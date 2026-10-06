@@ -33,6 +33,12 @@ Map<String, dynamic> _form(Map<String, dynamic>? style) => {
   ],
 };
 
+/// Label text of a decoration: `labelText`, or the text of the
+/// [FieldLabel] widget that carries the required / optional mark.
+String? _label(InputDecoration d) =>
+    d.labelText ??
+    (d.label is FieldLabel ? (d.label! as FieldLabel).field.label : null);
+
 InputDecoration _decoration(WidgetTester tester) =>
     tester.widget<TextField>(find.byType(TextField)).decoration!;
 
@@ -87,7 +93,7 @@ void main() {
     tester,
   ) async {
     await _pump(tester, _form(null));
-    expect(_decoration(tester).labelText, 'Guest name');
+    expect(_label(_decoration(tester)), 'Guest name');
     expect(_decoration(tester).hintText, 'As on the ticket');
   });
 
@@ -95,7 +101,7 @@ void main() {
     tester,
   ) async {
     await _pump(tester, _form({'labelPosition': 'above'}));
-    expect(_decoration(tester).labelText, isNull);
+    expect(_label(_decoration(tester)), isNull);
     expect(_decoration(tester).hintText, 'As on the ticket');
     final label = tester.getTopLeft(find.text('Guest name'));
     final field = tester.getTopLeft(find.byType(TextField));
@@ -135,7 +141,7 @@ void main() {
         },
       ],
     });
-    expect(_decoration(tester).labelText, isNull);
+    expect(_label(_decoration(tester)), isNull);
     expect(_decoration(tester).hintText, 'Guest name');
   });
 
@@ -155,8 +161,8 @@ void main() {
     final fields = tester
         .widgetList<TextField>(find.byType(TextField))
         .toList();
-    expect(fields[0].decoration!.labelText, isNull);
-    expect(fields[1].decoration!.labelText, 'Second');
+    expect(_label(fields[0].decoration!), isNull);
+    expect(_label(fields[1].decoration!), 'Second');
   });
 
   test('labelPosition parses, merges and round-trips', () {

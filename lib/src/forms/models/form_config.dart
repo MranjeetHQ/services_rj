@@ -1,4 +1,7 @@
+import 'package:flutter/widgets.dart' show EdgeInsets;
+
 import 'field_config.dart';
+import 'field_enums.dart';
 import 'field_style.dart';
 
 /// One step of a multi-step / wizard form.
@@ -46,6 +49,9 @@ class FormConfig {
     this.discardTitle,
     this.discardMessage,
     this.initialData = const {},
+    this.padding,
+    this.fieldSpacing,
+    this.fieldPadding,
   });
 
   /// Parses a form from JSON.
@@ -70,6 +76,9 @@ class FormConfig {
     initialData: Map<String, dynamic>.from(
       (json['data'] ?? json['initialData']) as Map? ?? const {},
     ),
+    padding: FieldStyleConfig.parseEdgeInsets(json['padding']),
+    fieldSpacing: FormSpacing.parse(json['fieldSpacing']),
+    fieldPadding: FieldStyleConfig.parseEdgeInsets(json['fieldPadding']),
   );
 
   /// Form id.
@@ -107,6 +116,16 @@ class FormConfig {
   /// definition and the record being edited in one payload.
   final Map<String, dynamic> initialData;
 
+  /// Space around the whole form (`"padding": "standard"` or `16` or
+  /// `{"horizontal": 16, "vertical": 8}`). Null means no padding.
+  final EdgeInsets? padding;
+
+  /// Gap between fields; overrides `DynamicFormThemeData.fieldSpacing`.
+  final double? fieldSpacing;
+
+  /// Default inner padding of every field (a field's own `padding` wins).
+  final EdgeInsets? fieldPadding;
+
   /// All fields across steps and the flat list.
   List<FieldConfig> get allFields =>
       steps.isEmpty ? fields : [for (final s in steps) ...s.fields];
@@ -123,5 +142,9 @@ class FormConfig {
     if (discardTitle != null) 'discardTitle': discardTitle,
     if (discardMessage != null) 'discardMessage': discardMessage,
     if (initialData.isNotEmpty) 'data': initialData,
+    if (padding != null) 'padding': FieldStyleConfig.edgeInsetsToJson(padding!),
+    if (fieldSpacing != null) 'fieldSpacing': fieldSpacing,
+    if (fieldPadding != null)
+      'fieldPadding': FieldStyleConfig.edgeInsetsToJson(fieldPadding!),
   };
 }

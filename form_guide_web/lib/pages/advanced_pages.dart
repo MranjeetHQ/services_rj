@@ -332,6 +332,123 @@ class StylingPage extends StatelessWidget {
             ],
           },
         ),
+        const H2('Radio and checkbox styles'),
+        const P(
+          '`optionStyle` changes how radio groups, checkbox groups and single '
+          'checkboxes, radios and switches look: `standard` (list tiles), '
+          '`card`, `chip` or `button`. `controlShape` (`square`, `rounded`, '
+          '`circle`) and `controlPosition` (`leading`, `trailing`, `none`) '
+          'adjust the mark. Colours, radius, spacing and padding come from '
+          'the style keys below, so each form or field can match your brand.',
+        ),
+        const LivePreview(
+          json: {
+            'fields': [
+              {
+                'type': 'radioGroup',
+                'id': 'plan',
+                'label': 'card',
+                'optionStyle': 'card',
+                'options': [
+                  {
+                    'label': 'Starter',
+                    'value': 'starter',
+                    'description': 'One project, community support',
+                  },
+                  {
+                    'label': 'Team',
+                    'value': 'team',
+                    'description': 'Ten projects, email support',
+                  },
+                ],
+              },
+              {
+                'type': 'checkboxGroup',
+                'id': 'days',
+                'label': 'button (grid of up to 3 columns)',
+                'optionStyle': 'button',
+                'options': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+              },
+              {
+                'type': 'checkboxGroup',
+                'id': 'diet',
+                'label': 'chip',
+                'optionStyle': 'chip',
+                'options': ['Vegetarian', 'Vegan', 'Jain', 'Gluten-free'],
+              },
+              {
+                'type': 'checkboxGroup',
+                'id': 'notify',
+                'label': 'card, trailing round checkbox',
+                'optionStyle': 'card',
+                'controlShape': 'circle',
+                'controlPosition': 'trailing',
+                'options': ['Email', 'SMS', 'WhatsApp'],
+              },
+              {
+                'type': 'checkbox',
+                'id': 'terms',
+                'label': 'I agree to the terms',
+                'helperText': 'A single checkbox as a card',
+                'optionStyle': 'card',
+              },
+            ],
+          },
+        ),
+        const P('The same options with custom colours, radius and spacing:'),
+        const LivePreview(
+          json: {
+            'type': 'radioGroup',
+            'id': 'size',
+            'label': 'Size',
+            'optionStyle': 'button',
+            'columns': 4,
+            'options': ['S', 'M', 'L', 'XL'],
+            'style': {
+              'activeColor': '#6A1B9A',
+              'selectedColor': '#6A1B9A',
+              'selectedBorderColor': '#4A148C',
+              'optionBorderColor': '#CE93D8',
+              'selectedTextStyle': {'color': '#FFFFFF'},
+              'optionRadius': 24,
+              'optionSpacing': 'standard',
+              'optionPadding': {'vertical': 'standard'},
+            },
+          },
+        ),
+        KeyTable.docs([
+          for (final d in styleDocs)
+            if (const {
+              'selectedColor',
+              'selectedBorderColor',
+              'optionBorderColor',
+              'optionRadius',
+              'optionSpacing',
+              'optionPadding',
+              'selectedTextStyle',
+              'activeColor',
+            }.contains(d.key))
+              d,
+        ]),
+        const H2('Padding and spacing'),
+        const P(
+          'Every padding, margin and spacing accepts a number or a name: '
+          '`none` (0), `compact` (8), `standard` (16), `comfortable` (24), '
+          '`spacious` (32). On the form root, `padding` adds space around the '
+          'whole form, `fieldSpacing` sets the gap between fields and '
+          '`fieldPadding` the default padding inside each field. In code, '
+          '`DynamicForm(padding: ...)` or `DynamicFormThemeData(formPadding: '
+          '..., fieldPadding: ...)` do the same.',
+        ),
+        const CodeBlock('''
+{
+  "padding": "standard",
+  "fieldSpacing": "comfortable",
+  "fields": [
+    {"type": "text", "id": "name", "label": "Name",
+     "margin": {"bottom": "compact"}}
+  ]
+}'''),
         const H2('FieldOverrides: customize in code'),
         const P(
           'For anything JSON cannot express, pass `fieldOverrides` (by '

@@ -7,6 +7,7 @@ import '../models/field_enums.dart';
 import '../models/field_overrides.dart';
 import '../models/field_type.dart';
 import '../models/form_config.dart';
+import '../models/form_search_sources.dart';
 import '../models/option_item.dart';
 import '../models/text_preset.dart';
 import '../models/validator_config.dart';
@@ -29,6 +30,7 @@ class DynamicFormController extends ChangeNotifier {
   DynamicFormController({
     String locale = 'en',
     this.optionsLoader,
+    this.searchSources = const {},
     this.phoneFormat = PhoneFormat.combined,
     Map<String, CustomValidatorFn> customValidators = const {},
   }) : l10n = FormLocalizations(locale),
@@ -64,6 +66,17 @@ class DynamicFormController extends ChangeNotifier {
 
   /// Async loader for dynamic options.
   final OptionsLoader? optionsLoader;
+
+  /// Search-as-you-type sources for this form, by name (JSON
+  /// `"searchSource"`). Checked before the global [FormSearchSources].
+  final Map<String, SearchOptionsFn> searchSources;
+
+  /// The search function named [name]: this controller's [searchSources]
+  /// first, then [FormSearchSources]. Repeater entries use their parent's.
+  SearchOptionsFn? searchSourceFor(String name) =>
+      searchSources[name] ??
+      _parent?.searchSourceFor(name) ??
+      FormSearchSources.lookup(name);
 
   final Map<String, CustomValidatorFn> _customValidators;
   final Map<String, FieldRuntimeState> _states = {};
@@ -498,7 +511,12 @@ class DynamicFormController extends ChangeNotifier {
       phoneFormat: PhoneFormat.combined,
     );
     String? error;
+    // Required fields must have a value; optional fields may stay empty,
+    // so their format / length / item-count checks only run on a value.
+    final optionalAndEmpty =
+        !s.required.value && FieldValidator.isEmpty(s.value.value);
     for (final v in _validatorsFor(s)) {
+      if (optionalAndEmpty && !v.checksEmpty) continue;
       error = v.validate(s.value.value, data, l10n);
       if (error != null) break;
     }
@@ -653,7 +671,11 @@ class DynamicFormController extends ChangeNotifier {
   static bool _isMultiValue(FieldConfig f) =>
       f.type == FieldType.multiselect ||
       f.type == FieldType.checkboxGroup ||
-      ((f.type == FieldType.chips || f.type == FieldType.segmented) &&
+      ((f.type == FieldType.chips ||
+              f.type == FieldType.segmented ||
+              f.type == FieldType.toggleButtons ||
+              f.type == FieldType.dropdown ||
+              f.type == FieldType.searchableDropdown) &&
           (f.ex<bool>('multiple') ?? false));
 
   // ------------------------------------------------------------ repeater
@@ -842,6 +864,8 @@ class DynamicFormController extends ChangeNotifier {
   Future<void> _loadOptionsFor(String id) async {
     final s = _states[id];
     if (s == null || optionsLoader == null) return;
+    // Search-as-you-type fields query their source while the user types.
+    if (s.config.ex<String>('searchSource') != null) return;
     final needsLoad =
         s.config.optionsUrl != null ||
         (s.config.options.isEmpty &&
@@ -878,6 +902,7 @@ class DynamicFormController extends ChangeNotifier {
   static bool _isSelection(FieldType t) => const {
     FieldType.dropdown,
     FieldType.multiselect,
+    FieldType.searchableDropdown,
     FieldType.country,
     FieldType.state,
     FieldType.city,

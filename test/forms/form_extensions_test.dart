@@ -266,7 +266,7 @@ void main() {
       await tester.tap(find.text('Add guest'));
       await tester.pumpAndSettle();
       expect(find.text('Guest 2'), findsOneWidget);
-      await tester.enterText(find.widgetWithText(TextField, 'Name').last, 'Mo');
+      await tester.enterText(find.byType(TextField).last, 'Mo');
       expect(c.getEntries('guests').last['name'], 'Mo');
       c.dispose();
     });
@@ -323,6 +323,9 @@ void main() {
             ],
           }),
         );
+      // Optional and empty: valid. Limits apply once something is picked.
+      expect(c.validateField('skills'), isNull);
+      c.setValue('skills', ['a']);
       expect(c.validateField('skills'), 'Add at least 2');
       c.setValue('skills', ['a', 'b', 'c', 'd']);
       expect(c.validateField('skills'), 'No more than 3 allowed');

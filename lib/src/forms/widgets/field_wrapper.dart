@@ -7,6 +7,7 @@ import '../fields/decoration_helper.dart';
 import '../fields/media_fields.dart';
 import '../fields/misc_fields.dart';
 import '../fields/repeater_field.dart';
+import '../fields/searchable_dropdown_field.dart';
 import '../fields/selection_fields.dart';
 import '../fields/slider_fields.dart';
 import '../fields/text_fields.dart';
@@ -62,7 +63,19 @@ class FieldWrapper extends StatelessWidget {
       case FieldType.time:
       case FieldType.datetime:
         return DynamicDateTimeField(field: field, controller: controller);
+      case FieldType.searchableDropdown:
+        return DynamicSearchableDropdownField(
+          field: field,
+          controller: controller,
+        );
       case FieldType.dropdown:
+        if (DynamicSearchableDropdownField.handles(field)) {
+          return DynamicSearchableDropdownField(
+            field: field,
+            controller: controller,
+          );
+        }
+        return DynamicDropdownField(field: field, controller: controller);
       case FieldType.multiselect:
       case FieldType.country:
       case FieldType.state:
@@ -167,6 +180,7 @@ class FieldWrapper extends StatelessWidget {
     FieldType.datetime,
     FieldType.dropdown,
     FieldType.multiselect,
+    FieldType.searchableDropdown,
     FieldType.country,
     FieldType.state,
     FieldType.city,
@@ -218,8 +232,15 @@ class FieldWrapper extends StatelessWidget {
         child: Container(
           width: field.width,
           height: field.height,
-          margin: field.margin ?? EdgeInsets.only(bottom: theme.fieldSpacing),
-          padding: field.padding,
+          margin:
+              field.margin ??
+              EdgeInsets.only(
+                bottom: controller.config?.fieldSpacing ?? theme.fieldSpacing,
+              ),
+          padding:
+              field.padding ??
+              controller.config?.fieldPadding ??
+              theme.fieldPadding,
           child: inner,
         ),
       ),
