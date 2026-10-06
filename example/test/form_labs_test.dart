@@ -694,14 +694,17 @@ void main() {
         find.widgetWithText(SwitchListTile, 'phone.copyWith(required: true)'),
       );
       await tester.pump();
-      expect(find.text('Phone (required via copyWith)'), findsOneWidget);
+      expect(
+        find.textContaining('Phone (required via copyWith)'),
+        findsOneWidget,
+      );
       expect(find.textContaining('identical: true'), findsOneWidget);
       await drain(tester);
     });
 
     testWidgets('multi-step page loads a record', (tester) async {
       await pumpLab(tester, 6);
-      expect(find.text('Destination'), findsOneWidget);
+      expect(find.textContaining('Destination'), findsOneWidget);
       expect(find.text('Contact 1'), findsOneWidget);
       await tester.tap(find.text('Edit household A'));
       await tester.pump();

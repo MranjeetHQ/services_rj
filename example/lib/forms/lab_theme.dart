@@ -145,6 +145,34 @@ Map<String, dynamic> buildStyleLabForm() => {
       ],
     },
     {
+      'type': 'radioGroup',
+      'id': 'option_card',
+      'label': 'optionStyle card with option colours',
+      'optionStyle': 'card',
+      'options': [
+        {'label': 'Window seat', 'value': 'window', 'description': 'Left side'},
+        {'label': 'Aisle seat', 'value': 'aisle'},
+      ],
+      'style': {
+        'selectedColor': '#E8F5E9',
+        'selectedBorderColor': '#2E7D32',
+        'optionBorderColor': '#C8E6C9',
+        'optionRadius': 14,
+        'optionSpacing': 'compact',
+        'optionPadding': {'horizontal': 'standard', 'vertical': 10},
+        'selectedTextStyle': {'color': '#1B5E20'},
+      },
+    },
+    {
+      'type': 'text',
+      'id': 'mark_both',
+      'label': 'requiredMark both (this field is optional)',
+      'style': {
+        'requiredMark': 'both',
+        'requiredMarkStyle': {'color': '#6A1B9A', 'italic': true},
+      },
+    },
+    {
       'type': 'text',
       'id': 'label_above',
       'label': 'Label above the field (labelPosition)',
@@ -446,7 +474,9 @@ class _ThemeLabPageState extends State<ThemeLabPage> {
     ),
     decorationBuilder: _decoration
         ? (context, field, d) => d.copyWith(
-            labelText: d.labelText == null ? null : '* ${d.labelText}',
+            // Required fields already show a `*` (style key requiredMark);
+            // this hook adds a hover hint and colours the floating label.
+            hoverColor: Colors.deepPurple.withValues(alpha: 0.04),
             floatingLabelStyle: const TextStyle(color: Colors.deepPurple),
           )
         : null,

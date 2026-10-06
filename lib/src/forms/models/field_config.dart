@@ -73,6 +73,7 @@ class FieldConfig {
     this.optionsUrl,
     this.enumName,
     this.optionLayout,
+    this.optionStyle,
     this.columns,
     this.allowCustomOptions = false,
     this.customOptionLabel,
@@ -154,6 +155,7 @@ class FieldConfig {
       optionLayout: OptionLayout.fromString(
         json['optionLayout'] ?? json['layout'],
       ),
+      optionStyle: OptionStyle.fromString(json['optionStyle']),
       columns: (json['columns'] as num?)?.toInt(),
       allowCustomOptions:
           json['allowCustomOptions'] as bool? ??
@@ -235,6 +237,7 @@ class FieldConfig {
     'enumName',
     'optionLayout',
     'layout',
+    'optionStyle',
     'columns',
     'allowCustomOptions',
     'allowCustom',
@@ -386,6 +389,10 @@ class FieldConfig {
   /// Layout of radio / checkbox group and chip options.
   final OptionLayout? optionLayout;
 
+  /// How radio / checkbox options are drawn: plain tiles, cards, chips or
+  /// buttons. Also applies to a single checkbox, radio or switch.
+  final OptionStyle? optionStyle;
+
   /// Column count for [OptionLayout.grid].
   final int? columns;
 
@@ -487,6 +494,7 @@ class FieldConfig {
     if (optionsUrl != null) 'optionsUrl': optionsUrl,
     if (enumName != null) 'enum': enumName,
     if (optionLayout != null) 'optionLayout': optionLayout!.name,
+    if (optionStyle != null) 'optionStyle': optionStyle!.name,
     if (columns != null) 'columns': columns,
     if (allowCustomOptions) 'allowCustomOptions': true,
     if (customOptionLabel != null) 'customOptionLabel': customOptionLabel,
@@ -519,6 +527,7 @@ class FieldConfig {
     List<ValidatorConfig>? validators,
     List<FieldConfig>? fields,
     OptionLayout? optionLayout,
+    OptionStyle? optionStyle,
     bool? allowCustomOptions,
     int? minItems,
     int? maxItems,
@@ -564,6 +573,7 @@ class FieldConfig {
     optionsUrl: optionsUrl,
     enumName: enumName,
     optionLayout: optionLayout ?? this.optionLayout,
+    optionStyle: optionStyle ?? this.optionStyle,
     columns: columns,
     allowCustomOptions: allowCustomOptions ?? this.allowCustomOptions,
     customOptionLabel: customOptionLabel,

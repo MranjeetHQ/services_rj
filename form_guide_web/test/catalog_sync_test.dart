@@ -1,12 +1,16 @@
 // Keeps the guide in sync with the package. When one of these fails, the
 // package gained something the website does not document yet: add it to
 // lib/catalog/field_catalog.dart or lib/catalog/reference_catalog.dart.
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:form_guide_web/catalog/field_catalog.dart';
 import 'package:form_guide_web/catalog/reference_catalog.dart';
 import 'package:form_guide_web/guide_enums.dart';
 import 'package:form_guide_web/main.dart';
+import 'package:form_guide_web/pages/basics_pages.dart';
+import 'package:form_guide_web/widgets/guide_search.dart';
 import 'package:form_guide_web/pages/elements_page.dart';
 import 'package:services_rj/services_rj.dart';
 
@@ -130,5 +134,34 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('"dropdown"'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  test('Getting started code matches the runnable example', () {
+    final file = File('../example/lib/quick_start.dart').readAsStringSync();
+    expect(file, contains(quickStartCode.trim()));
+  });
+
+  testWidgets('guide search finds elements and keys', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(body: SingleChildScrollView(child: GuideSearch())),
+      ),
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('guide-search')),
+      'searchable',
+    );
+    await tester.pump();
+    expect(find.text('searchableDropdown'), findsOneWidget);
+    await tester.enterText(
+      find.byKey(const ValueKey('guide-search')),
+      'optionStyle',
+    );
+    await tester.pump();
+    expect(find.textContaining('Property ·'), findsWidgets);
+    expect(
+      guideSearchIndex.where((e) => e.kind == 'Element').length,
+      FieldType.values.length,
+    );
   });
 }

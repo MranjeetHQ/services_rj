@@ -50,6 +50,7 @@ class DynamicForm extends StatefulWidget {
     this.fieldOverrides = const {},
     this.typeOverrides = const {},
     this.onOptionAdded,
+    this.padding,
   });
 
   /// The form controller (create once, dispose in your State's dispose).
@@ -114,6 +115,11 @@ class DynamicForm extends StatefulWidget {
   /// Called when the user adds an option to a field with
   /// `"allowCustomOptions": true`.
   final void Function(String fieldId, OptionItem option)? onOptionAdded;
+
+  /// Space around the form. Wins over the JSON root `"padding"` and
+  /// [DynamicFormThemeData.formPadding]. `EdgeInsets.all(16)` is the
+  /// standard page margin (`"padding": "standard"` in JSON).
+  final EdgeInsetsGeometry? padding;
 
   @override
   State<DynamicForm> createState() => _DynamicFormState();
@@ -199,15 +205,24 @@ class _DynamicFormState extends State<DynamicForm> {
     }
   }
 
+  EdgeInsetsGeometry? _padding(BuildContext context) =>
+      widget.padding ??
+      _config.padding ??
+      DynamicFormTheme.of(context).formPadding;
+
   @override
   Widget build(BuildContext context) {
-    final body = _config.steps.isNotEmpty
+    final padding = _padding(context);
+    Widget body = _config.steps.isNotEmpty
         ? MultiStepForm(
             controller: widget.controller,
             config: _config,
             onSubmit: widget.onSubmit,
           )
-        : _buildFieldList();
+        : _buildFieldList(padding);
+    if (_config.steps.isNotEmpty && padding != null) {
+      body = Padding(padding: padding, child: body);
+    }
     final guard = widget.confirmDiscard ?? _config.confirmDiscard;
     if (!guard) return body;
     return ValueListenableBuilder<bool>(
@@ -230,7 +245,7 @@ class _DynamicFormState extends State<DynamicForm> {
     );
   }
 
-  Widget _buildFieldList() {
+  Widget _buildFieldList(EdgeInsetsGeometry? padding) {
     return ValueListenableBuilder<int>(
       valueListenable: widget.controller.structureRevision,
       builder: (context, _, _) {
@@ -250,6 +265,7 @@ class _DynamicFormState extends State<DynamicForm> {
             (widget.showSubmitButton ? 1 : 0);
 
         return ListView.builder(
+          padding: padding,
           shrinkWrap: widget.shrinkWrap,
           physics: widget.physics,
           itemCount: itemCount,

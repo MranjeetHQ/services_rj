@@ -14,8 +14,14 @@ void _collect(List<dynamic> fields, Set<FieldType> out) {
   }
 }
 
+/// A text field by label. Required fields carry their label in a
+/// [FieldLabel] (with the `*` mark) instead of `labelText`.
 Finder _field(String label) => find.byWidgetPredicate(
-  (w) => w is TextField && w.decoration?.labelText == label,
+  (w) =>
+      w is TextField &&
+      (w.decoration?.labelText == label ||
+          (w.decoration?.label is FieldLabel &&
+              (w.decoration!.label! as FieldLabel).field.label == label)),
 );
 
 void main() {
@@ -58,7 +64,7 @@ void main() {
 
   testWidgets('text inputs page collects typed values', (tester) async {
     await open(tester, 0);
-    expect(find.text('Name your boat'), findsOneWidget);
+    expect(find.textContaining('Name your boat'), findsOneWidget);
     await tester.enterText(_field('Name your boat'), 'Sea Biscuit');
     await tester.enterText(_field('Crew email'), 'crew@example.com');
     await tester.pump();

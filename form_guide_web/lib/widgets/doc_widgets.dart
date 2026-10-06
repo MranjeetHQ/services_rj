@@ -185,13 +185,20 @@ class KeyTable extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: Table(
-        columnWidths: headers.length == 3
-            ? const {
-                0: IntrinsicColumnWidth(flex: 1),
-                1: IntrinsicColumnWidth(flex: 1),
-                2: FlexColumnWidth(3),
-              }
-            : const {0: IntrinsicColumnWidth(), 1: FlexColumnWidth()},
+        columnWidths: switch (headers.length) {
+          3 => const {
+            0: IntrinsicColumnWidth(flex: 1),
+            1: IntrinsicColumnWidth(flex: 1),
+            2: FlexColumnWidth(3),
+          },
+          4 => const {
+            0: IntrinsicColumnWidth(flex: 1),
+            1: IntrinsicColumnWidth(flex: 1),
+            2: FlexColumnWidth(3),
+            3: FlexColumnWidth(2),
+          },
+          _ => const {0: IntrinsicColumnWidth(), 1: FlexColumnWidth()},
+        },
         defaultVerticalAlignment: TableCellVerticalAlignment.top,
         children: [
           TableRow(

@@ -52,6 +52,11 @@ enum FieldType {
   /// Multi-select dropdown (checkbox list in a dialog).
   multiselect,
 
+  /// Dropdown with a search box in a bottom sheet, dialog or full-screen
+  /// picker. Options come from a local list, an API loaded once, or a
+  /// search-as-you-type API source; `"multiple": true` selects several.
+  searchableDropdown,
+
   /// Single checkbox.
   checkbox,
 
@@ -190,6 +195,9 @@ enum FieldType {
       'repeatable': FieldType.repeater,
       'list': FieldType.repeater,
       'multiSelectChips': FieldType.chips,
+      'searchable': FieldType.searchableDropdown,
+      'dropdownSearch': FieldType.searchableDropdown,
+      'searchSelect': FieldType.searchableDropdown,
     };
     return aliases[normalized] ??
         FieldType.values.firstWhere(

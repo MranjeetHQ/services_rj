@@ -4,6 +4,76 @@ import 'package:services_rj/services_rj.dart';
 import '../catalog/field_catalog.dart';
 import '../catalog/reference_catalog.dart';
 import '../widgets/doc_widgets.dart';
+import '../widgets/guide_search.dart';
+
+/// The Getting started app. Kept identical to `example/lib/quick_start.dart`,
+/// which a test runs.
+const quickStartCode = '''
+import 'package:flutter/material.dart';
+import 'package:services_rj/services_rj.dart';
+
+void main() => runApp(const MaterialApp(home: ProfilePage()));
+
+const profileForm = {
+  'padding': 'standard',
+  'fields': [
+    {
+      'type': 'text',
+      'id': 'fullName',
+      'label': 'Full name',
+      'validators': ['required'],
+    },
+    {
+      'type': 'searchableDropdown',
+      'id': 'city',
+      'label': 'City',
+      'options': ['Ahmedabad', 'Bengaluru', 'Mumbai', 'Pune', 'Surat'],
+    },
+    {
+      'type': 'radioGroup',
+      'id': 'plan',
+      'label': 'Plan',
+      'optionStyle': 'card',
+      'options': [
+        {'label': 'Free', 'value': 'free', 'description': 'For trying out'},
+        {'label': 'Pro', 'value': 'pro', 'description': 'For teams'},
+      ],
+    },
+    {'type': 'switch', 'id': 'newsletter', 'label': 'Send me updates'},
+  ],
+};
+
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final controller = DynamicFormController();
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Profile')),
+      body: DynamicForm(
+        controller: controller,
+        json: profileForm, // a Map, or the JSON string from your API
+        showSubmitButton: true,
+        onSubmit: (data) => ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Saved: \$data'))),
+      ),
+    );
+  }
+}''';
 
 class GettingStartedPage extends StatelessWidget {
   const GettingStartedPage({super.key});
@@ -19,6 +89,8 @@ class GettingStartedPage extends StatelessWidget {
           '(repeatable) sections and per-field styling. Every example in '
           'this guide is live — edit it and watch the form data change.',
       children: const [
+        GuideSearch(),
+        SizedBox(height: 8),
         H2('1. Install'),
         CodeBlock('''
 dependencies:
@@ -48,32 +120,13 @@ dependencies:
           },
         ),
         H2('3. Render it'),
-        CodeBlock('''
-import 'package:services_rj/services_rj.dart';
-
-class ProfileForm extends StatefulWidget {
-  const ProfileForm({super.key});
-  @override
-  State<ProfileForm> createState() => _ProfileFormState();
-}
-
-class _ProfileFormState extends State<ProfileForm> {
-  final controller = DynamicFormController();
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => DynamicForm(
-        controller: controller,
-        json: profileJson,          // Map or JSON string
-        showSubmitButton: true,
-        onSubmit: (data) => api.save(data),
-      );
-}'''),
+        P(
+          'A complete app: paste it into `lib/main.dart` and run. '
+          '`DynamicForm` is a scrolling list of fields, so put it in a '
+          '`Scaffold` body (it needs a `Material` ancestor and a bounded '
+          'height), not directly under `MaterialApp`.',
+        ),
+        CodeBlock(quickStartCode),
         Callout(
           'Only importing forms? `import '
           '\'package:services_rj/forms.dart\';` exposes just the form '
@@ -256,6 +309,13 @@ class PropertiesPage extends StatelessWidget {
             ['discardTitle', 'Title of that dialog.'],
             ['discardMessage', 'Message of that dialog.'],
             ['data', 'Record to prefill (alias `initialData`).'],
+            [
+              'padding',
+              'Space around the whole form: a number, a spacing name '
+                  '(`standard` = 16) or a Map.',
+            ],
+            ['fieldSpacing', 'Gap between fields (default 16).'],
+            ['fieldPadding', 'Default inner padding of every field.'],
           ],
         ),
       ],
@@ -274,6 +334,66 @@ class ValidationPage extends StatelessWidget {
           'Validators run in order and the first failure is shown. Once a '
           'field shows an error it re-validates as the user types.',
       children: [
+        const H2('Required and optional fields'),
+        const P(
+          'One rule drives validation: a required field must have a value, '
+          'an optional field may be left empty. A field is required when it '
+          'has `"required": true`, a `required` validator, a `requiredWhen` '
+          'condition that holds, or `controller.setRequired(id, required: '
+          'true)`. An optional field that is empty skips its format, length, '
+          'range and item-count checks; once it has a value, they all run. '
+          'Custom validators always run, so cross-field rules can check '
+          'empty values. `matchField` passes when both fields are empty.',
+        ),
+        const P(
+          'Labels show it: required fields get a red `*` by default. Set '
+          '`"requiredMark"` in the form `style` to `optional` ("(optional)" '
+          'on the others), `both` or `none`, and style the mark with '
+          '`requiredMarkStyle`. Screen readers hear "required". Tick the '
+          'checkbox below and watch GSTIN become required.',
+        ),
+        const LivePreview(
+          json: {
+            'style': {'requiredMark': 'both'},
+            'fields': [
+              {
+                'type': 'text',
+                'id': 'fullName',
+                'label': 'Full name',
+                'required': true,
+              },
+              {
+                'type': 'email',
+                'id': 'workEmail',
+                'label': 'Work email',
+                'validators': ['email'],
+                'helperText': 'Optional: empty is fine, a typo is not',
+              },
+              {
+                'type': 'checkbox',
+                'id': 'business',
+                'label': 'This is a business purchase',
+              },
+              {
+                'type': 'text',
+                'id': 'gstin',
+                'label': 'GSTIN',
+                'preset': 'gst',
+                'requiredWhen': {'field': 'business', 'operator': 'isTrue'},
+              },
+              {
+                'type': 'checkboxGroup',
+                'id': 'topics',
+                'label': 'Topics',
+                'minItems': 2,
+                'optionStyle': 'chip',
+                'helperText': 'Optional, but pick at least 2 if you pick any',
+                'options': ['Billing', 'Delivery', 'Returns', 'Offers'],
+              },
+            ],
+          },
+        ),
+        const H2('Built-in validators'),
         KeyTable(
           headers: const ['Validator', 'Rule'],
           rows: [

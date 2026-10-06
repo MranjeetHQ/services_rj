@@ -560,55 +560,126 @@ final score = SharedPrefManager.getData<int>('score');
 
 ### 5. Dynamic Forms
 
-Build complete forms from JSON — 53 field types, validation (including one-key **text presets** for PAN, Aadhaar, GST, mobile, IFSC and more), conditional logic, multi-step wizards, edit mode, **enum-driven options**, **extendable (repeatable) sections**, user-addable options and per-field styling. Full reference: [docs/forms.md](docs/forms.md). Interactive guide: [`form_guide_web/`](form_guide_web/). Demo app: [`example/`](example/).
+Build complete forms from JSON: 54 field types, validation (including one-key **text presets** for PAN, Aadhaar, GST, mobile, IFSC and more), conditional logic, multi-step wizards, edit mode, **searchable dropdowns** (local list or API, single or multiple), **radio and checkbox styles** (`card`, `chip`, `button`), **enum-driven options**, **extendable (repeatable) sections**, user-addable options, per-field styling and standard padding presets. Full reference: [docs/forms.md](docs/forms.md). Interactive guide with an element builder and search: [live form guide](https://mranjeethq.github.io/services_rj/). Demo app: [`example/`](example/).
+
+A complete app. Paste it into `lib/main.dart` and run it. `DynamicForm` is a scrolling list, so it goes in a `Scaffold` body:
 
 ```dart
+import 'package:flutter/material.dart';
+import 'package:services_rj/services_rj.dart';
+
 enum MealChoice { vegetarian, vegan, nonVegetarian }
 
 void main() {
   FormEnumRegistry.register('MealChoice', MealChoice.values);
-  runApp(const MyApp());
+  // Search-as-you-type source. Replace the body with your API call.
+  FormSearchSources.register('venues', (query, formData) async {
+    const venues = ['Riverside Hall', 'Rooftop Garden', 'Old Library'];
+    return [
+      for (final v in venues)
+        if (v.toLowerCase().contains(query.toLowerCase()))
+          OptionItem(label: v, value: v),
+    ];
+  });
+  runApp(const MaterialApp(home: RsvpPage()));
 }
 
-const rsvpJson = {
+const rsvpForm = {
+  'padding': 'standard',
   'fields': [
-    {'type': 'text', 'id': 'name', 'label': 'Your name', 'validators': ['required']},
     {
-      'type': 'repeater',                 // extendable section
+      'type': 'text',
+      'id': 'name',
+      'label': 'Your name',
+      'validators': ['required'],
+    },
+    {
+      'type': 'searchableDropdown', // searches the 'venues' source
+      'id': 'venue',
+      'label': 'Venue',
+      'searchSource': 'venues',
+    },
+    {
+      'type': 'repeater', // extendable section
       'id': 'guests',
       'itemLabel': 'Guest {index}',
       'addLabel': 'Add another guest',
       'minItems': 1,
       'maxItems': 4,
       'fields': [
-        {'type': 'text', 'id': 'guestName', 'label': 'Guest name', 'required': true},
-        {'type': 'dropdown', 'id': 'meal', 'label': 'Meal', 'enum': 'MealChoice'},
+        {'type': 'text', 'id': 'guestName', 'label': 'Guest name'},
+        {
+          'type': 'dropdown',
+          'id': 'meal',
+          'label': 'Meal',
+          'enum': 'MealChoice',
+        },
       ],
     },
     {
-      'type': 'chips',
+      'type': 'searchableDropdown',
       'id': 'topics',
-      'multiple': true,
-      'allowCustomOptions': true,         // users can add their own
-      'options': ['Web', 'Testing'],
+      'label': 'Topics you like',
+      'multiple': true, // value is a List
+      'allowCustomOptions': true, // users can add their own
+      'options': ['Web', 'Testing', 'Design'],
+    },
+    {
+      'type': 'radioGroup',
+      'id': 'seating',
+      'label': 'Seating',
+      'optionStyle': 'button', // standard | card | chip | button
+      'options': ['Front', 'Middle', 'Back'],
       'style': {'activeColor': '#00897B'},
     },
   ],
 };
 
-DynamicForm(
-  controller: controller,               // DynamicFormController
-  json: rsvpJson,
-  showSubmitButton: true,
-  onSubmit: (data) => api.save(data),   // guests → List<Map>, meal → 'vegan'
-  fieldOverrides: {
-    'name': FieldOverrides(wrapper: (context, field, child) => Card(child: child)),
-  },
-);
+class RsvpPage extends StatefulWidget {
+  const RsvpPage({super.key});
 
+  @override
+  State<RsvpPage> createState() => _RsvpPageState();
+}
+
+class _RsvpPageState extends State<RsvpPage> {
+  final controller = DynamicFormController();
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('RSVP')),
+      body: DynamicForm(
+        controller: controller,
+        json: rsvpForm,
+        showSubmitButton: true,
+        // guests -> List<Map>, topics -> List, seating -> 'Front'
+        onSubmit: (data) => ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('RSVP: $data'))),
+      ),
+    );
+  }
+}
+```
+
+Read values back and drive the form from code:
+
+```dart
+controller.getFormData();                       // {name: ..., venue: ..., guests: [...], ...}
+controller.validate();                          // true when valid; errors show on screen
 controller.getEnum('meal', MealChoice.values);  // typed read-back
+controller.setValue('seating', 'Front');
 controller.addEntry('guests', data: {'guestName': 'Asha'});
 ```
+
+Searchable dropdown options can come from a local `options` list, an API loaded once (`DynamicFormController(optionsLoader: ...)`), or an API searched as the user types (`"searchSource"` + `FormSearchSources.register`). See [Searchable dropdown](docs/forms.md#searchable-dropdown).
 
 > The form engine is based on [json_form_engine](https://github.com/rupeshrajak0285/json_form_engine) by Rupesh Rajak (MIT). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

@@ -9,6 +9,7 @@ import '../models/option_item.dart';
 import '../theme/dynamic_form_theme.dart';
 import '../utils/field_utils.dart';
 import 'decoration_helper.dart';
+import 'option_style.dart';
 
 /// Rebuild-scoped helper: listens to value+error+enabled+options of a field.
 class _FieldScope extends StatelessWidget {
@@ -359,45 +360,80 @@ class DynamicBoolField extends StatelessWidget {
         final checked = value == true;
         final interactive = enabled && !field.readOnly;
         void toggle(bool? v) => controller.setValue(field.id, v ?? false);
-        final title = Text(field.label ?? '', style: style.labelStyle);
+        final title = FieldLabel(
+          field: field,
+          controller: controller,
+          style: style.labelStyle,
+        );
         final subtitle = field.helperText != null
             ? Text(field.helperText!, style: style.helperStyle)
             : null;
+        final optionStyle = field.optionStyle;
+        final shape = controlShapeOf(field);
+        final position = controlPositionOf(field);
         Widget tile;
-        switch (field.type) {
-          case FieldType.switchField:
-            tile = SwitchListTile(
-              value: checked,
-              title: title,
-              subtitle: subtitle,
-              activeThumbColor: active,
-              onChanged: interactive ? toggle : null,
-              focusNode: state.focusNode,
-              contentPadding: EdgeInsets.zero,
-            );
-          case FieldType.radio:
-            tile = RadioListTile<bool>(
-              value: true,
-              // ignore: deprecated_member_use
-              groupValue: checked ? true : null,
-              title: title,
-              subtitle: subtitle,
-              activeColor: active,
-              // ignore: deprecated_member_use
-              onChanged: interactive ? (_) => toggle(!checked) : null,
-              contentPadding: EdgeInsets.zero,
-            );
-          default:
-            tile = CheckboxListTile(
-              value: checked,
-              title: title,
-              subtitle: subtitle,
-              activeColor: active,
-              onChanged: interactive ? toggle : null,
-              focusNode: state.focusNode,
-              controlAffinity: ListTileControlAffinity.leading,
-              contentPadding: EdgeInsets.zero,
-            );
+        if (optionStyle != null && optionStyle != OptionStyle.standard) {
+          final isSwitch = field.type == FieldType.switchField;
+          tile = StyledOption(
+            optionStyle: optionStyle,
+            style: style,
+            label: FieldLabel(field: field, controller: controller),
+            description: field.helperText,
+            selected: checked,
+            radio: field.type == FieldType.radio,
+            shape: shape,
+            position: isSwitch ? ControlPosition.trailing : position,
+            trailing: isSwitch
+                ? Switch(
+                    value: checked,
+                    activeThumbColor: active,
+                    onChanged: interactive ? toggle : null,
+                  )
+                : null,
+            onTap: interactive ? () => toggle(!checked) : null,
+          );
+        } else {
+          switch (field.type) {
+            case FieldType.switchField:
+              tile = SwitchListTile(
+                value: checked,
+                title: title,
+                subtitle: subtitle,
+                activeThumbColor: active,
+                onChanged: interactive ? toggle : null,
+                focusNode: state.focusNode,
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: position == ControlPosition.leading
+                    ? ListTileControlAffinity.leading
+                    : ListTileControlAffinity.platform,
+              );
+            case FieldType.radio:
+              tile = RadioListTile<bool>(
+                value: true,
+                // ignore: deprecated_member_use
+                groupValue: checked ? true : null,
+                title: title,
+                subtitle: subtitle,
+                activeColor: active,
+                // ignore: deprecated_member_use
+                onChanged: interactive ? (_) => toggle(!checked) : null,
+                contentPadding: EdgeInsets.zero,
+              );
+            default:
+              tile = CheckboxListTile(
+                value: checked,
+                title: title,
+                subtitle: subtitle,
+                activeColor: active,
+                checkboxShape: checkboxBorder(shape),
+                onChanged: interactive ? toggle : null,
+                focusNode: state.focusNode,
+                controlAffinity: position == ControlPosition.trailing
+                    ? ListTileControlAffinity.trailing
+                    : ListTileControlAffinity.leading,
+                contentPadding: EdgeInsets.zero,
+              );
+          }
         }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -438,36 +474,69 @@ class DynamicGroupField extends StatelessWidget {
               field.type == FieldType.toggleButtons) &&
           (field.ex<bool>('multiple') ?? false));
 
+  /// Card, chip or button styling for radio and checkbox groups; null for
+  /// the standard tiles.
+  OptionStyle? get _styled {
+    final s = field.optionStyle;
+    if (s == null || s == OptionStyle.standard) return null;
+    return field.type == FieldType.checkboxGroup ||
+            field.type == FieldType.radioGroup
+        ? s
+        : null;
+  }
+
   OptionLayout get _layout =>
       field.optionLayout ??
-      (field.type == FieldType.chips
-          ? OptionLayout.wrap
-          : OptionLayout.vertical);
+      switch (_styled) {
+        OptionStyle.chip => OptionLayout.wrap,
+        OptionStyle.button => OptionLayout.grid,
+        _ =>
+          field.type == FieldType.chips
+              ? OptionLayout.wrap
+              : OptionLayout.vertical,
+      };
 
-  Widget _arrange(List<Widget> items) {
+  Widget _arrange(List<Widget> items, {double? gap}) {
+    final spacing = gap ?? 8.0;
     switch (_layout) {
       case OptionLayout.vertical:
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: items,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (var i = 0; i < items.length; i++) ...[
+              if (i > 0 && gap != null) SizedBox(height: gap),
+              items[i],
+            ],
+          ],
         );
       case OptionLayout.horizontal:
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          child: Row(children: items),
+          child: Row(
+            children: [
+              for (var i = 0; i < items.length; i++) ...[
+                if (i > 0 && gap != null) SizedBox(width: gap),
+                items[i],
+              ],
+            ],
+          ),
         );
       case OptionLayout.wrap:
-        return Wrap(spacing: 8, runSpacing: 4, children: items);
+        return Wrap(spacing: spacing, runSpacing: gap ?? 4, children: items);
       case OptionLayout.grid:
-        final columns = (field.columns ?? 2).clamp(1, 12);
+        final columns =
+            (field.columns ??
+                    (_styled == OptionStyle.button
+                        ? items.length.clamp(1, 3)
+                        : 2))
+                .clamp(1, 12);
         return LayoutBuilder(
           builder: (context, constraints) {
-            const spacing = 8.0;
             final width =
                 (constraints.maxWidth - spacing * (columns - 1)) / columns;
             return Wrap(
               spacing: spacing,
-              runSpacing: 4,
+              runSpacing: gap ?? 4,
               children: [
                 for (final item in items) SizedBox(width: width, child: item),
               ],
@@ -541,170 +610,211 @@ class DynamicGroupField extends StatelessWidget {
         final addLabel = field.customOptionLabel ?? l10n.message('addOption');
         final canAddCustom = field.allowCustomOptions && interactive;
 
+        final shape = controlShapeOf(field);
+        final position = controlPositionOf(field);
+        final optionStyle = _styled;
+
         Widget body;
-        switch (field.type) {
-          case FieldType.checkboxGroup:
-            body = _arrange([
-              for (final o in options)
-                compact
-                    ? compactItem(
-                        Checkbox(
+        if (optionStyle != null) {
+          final isRadio = field.type == FieldType.radioGroup;
+          body = _arrange(gap: style.optionSpacing ?? 8, [
+            for (final o in options)
+              StyledOption(
+                optionStyle: optionStyle,
+                style: style,
+                label:
+                    overrides?.optionBuilder?.call(
+                      context,
+                      o,
+                      selected.contains(o.value),
+                    ) ??
+                    Text(o.label),
+                description: o.description,
+                icon: _optionIcon(o),
+                selected: selected.contains(o.value),
+                radio: isRadio,
+                shape: shape,
+                position: position,
+                onTap: canPick(o)
+                    ? () => isRadio
+                          ? controller.setValue(field.id, o.value)
+                          : select(o.value, !selected.contains(o.value))
+                    : null,
+              ),
+          ]);
+        } else {
+          switch (field.type) {
+            case FieldType.checkboxGroup:
+              body = _arrange([
+                for (final o in options)
+                  compact
+                      ? compactItem(
+                          Checkbox(
+                            value: selected.contains(o.value),
+                            shape: checkboxBorder(shape),
+                            activeColor: active,
+                            onChanged: canPick(o)
+                                ? (v) => select(o.value, v ?? false)
+                                : null,
+                          ),
+                          o,
+                          canPick(o)
+                              ? () =>
+                                    select(o.value, !selected.contains(o.value))
+                              : null,
+                        )
+                      : CheckboxListTile(
                           value: selected.contains(o.value),
+                          title: label(o),
+                          secondary: _optionIcon(o),
                           activeColor: active,
+                          checkboxShape: checkboxBorder(shape),
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: position == ControlPosition.trailing
+                              ? ListTileControlAffinity.trailing
+                              : ListTileControlAffinity.leading,
                           onChanged: canPick(o)
                               ? (v) => select(o.value, v ?? false)
                               : null,
                         ),
-                        o,
-                        canPick(o)
-                            ? () => select(o.value, !selected.contains(o.value))
-                            : null,
-                      )
-                    : CheckboxListTile(
-                        value: selected.contains(o.value),
-                        title: label(o),
-                        secondary: _optionIcon(o),
-                        activeColor: active,
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        controlAffinity: ListTileControlAffinity.leading,
-                        onChanged: canPick(o)
-                            ? (v) => select(o.value, v ?? false)
-                            : null,
-                      ),
-            ]);
-          case FieldType.radioGroup:
-            body = _arrange([
-              for (final o in options)
-                compact
-                    ? compactItem(
-                        Radio<Object?>(
+              ]);
+            case FieldType.radioGroup:
+              body = _arrange([
+                for (final o in options)
+                  compact
+                      ? compactItem(
+                          Radio<Object?>(
+                            value: o.value,
+                            // ignore: deprecated_member_use
+                            groupValue: value,
+                            activeColor: active,
+                            // ignore: deprecated_member_use
+                            onChanged: canPick(o)
+                                ? (v) => controller.setValue(field.id, v)
+                                : null,
+                          ),
+                          o,
+                          canPick(o)
+                              ? () => controller.setValue(field.id, o.value)
+                              : null,
+                        )
+                      : RadioListTile<Object?>(
                           value: o.value,
                           // ignore: deprecated_member_use
                           groupValue: value,
+                          title: label(o),
+                          secondary: _optionIcon(o),
                           activeColor: active,
+                          controlAffinity: position == ControlPosition.trailing
+                              ? ListTileControlAffinity.trailing
+                              : ListTileControlAffinity.platform,
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
                           // ignore: deprecated_member_use
                           onChanged: canPick(o)
                               ? (v) => controller.setValue(field.id, v)
                               : null,
                         ),
-                        o,
-                        canPick(o)
-                            ? () => controller.setValue(field.id, o.value)
-                            : null,
-                      )
-                    : RadioListTile<Object?>(
-                        value: o.value,
-                        // ignore: deprecated_member_use
-                        groupValue: value,
-                        title: label(o),
-                        secondary: _optionIcon(o),
-                        activeColor: active,
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        // ignore: deprecated_member_use
-                        onChanged: canPick(o)
-                            ? (v) => controller.setValue(field.id, v)
-                            : null,
+              ]);
+            case FieldType.toggleButtons:
+              body = SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: ToggleButtons(
+                  isSelected: [
+                    for (final o in options) selected.contains(o.value),
+                  ],
+                  selectedColor: active,
+                  fillColor: active?.withValues(alpha: 0.12),
+                  onPressed: interactive
+                      ? (i) {
+                          final o = options[i];
+                          if (!canPick(o)) return;
+                          select(o.value, !selected.contains(o.value));
+                        }
+                      : null,
+                  children: [
+                    for (final o in options)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_optionIcon(o) != null) ...[
+                              _optionIcon(o)!,
+                              const SizedBox(width: 6),
+                            ],
+                            overrides?.optionBuilder?.call(
+                                  context,
+                                  o,
+                                  selected.contains(o.value),
+                                ) ??
+                                Text(o.label),
+                          ],
+                        ),
                       ),
-            ]);
-          case FieldType.toggleButtons:
-            body = SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: ToggleButtons(
-                isSelected: [
-                  for (final o in options) selected.contains(o.value),
+                  ],
+                ),
+              );
+            case FieldType.segmented:
+              body = SegmentedButton<Object?>(
+                segments: [
+                  for (final o in options)
+                    ButtonSegment(
+                      value: o.value,
+                      label:
+                          overrides?.optionBuilder?.call(
+                            context,
+                            o,
+                            selected.contains(o.value),
+                          ) ??
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(o.label, maxLines: 1, softWrap: false),
+                          ),
+                      icon: _optionIcon(o),
+                      enabled: o.enabled,
+                    ),
                 ],
-                selectedColor: active,
-                fillColor: active?.withValues(alpha: 0.12),
-                onPressed: interactive
-                    ? (i) {
-                        final o = options[i];
-                        if (!canPick(o)) return;
-                        select(o.value, !selected.contains(o.value));
+                selected: selected.toSet(),
+                multiSelectionEnabled: _multi,
+                emptySelectionAllowed: true,
+                style: active == null
+                    ? null
+                    : SegmentedButton.styleFrom(
+                        selectedBackgroundColor: active.withValues(alpha: 0.18),
+                        selectedForegroundColor: active,
+                      ),
+                onSelectionChanged: interactive
+                    ? (set) {
+                        if (_multi && max != null && set.length > max) return;
+                        controller.setValue(
+                          field.id,
+                          _multi ? set.toList() : set.firstOrNull,
+                        );
                       }
                     : null,
-                children: [
-                  for (final o in options)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (_optionIcon(o) != null) ...[
-                            _optionIcon(o)!,
-                            const SizedBox(width: 6),
-                          ],
-                          overrides?.optionBuilder?.call(
-                                context,
-                                o,
-                                selected.contains(o.value),
-                              ) ??
-                              Text(o.label),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            );
-          case FieldType.segmented:
-            body = SegmentedButton<Object?>(
-              segments: [
+              );
+            default: // chips
+              body = _arrange([
                 for (final o in options)
-                  ButtonSegment(
-                    value: o.value,
-                    label:
-                        overrides?.optionBuilder?.call(
-                          context,
-                          o,
-                          selected.contains(o.value),
-                        ) ??
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(o.label, maxLines: 1, softWrap: false),
-                        ),
-                    icon: _optionIcon(o),
-                    enabled: o.enabled,
+                  FilterChip(
+                    label: label(o),
+                    avatar: _optionIcon(o),
+                    selected: selected.contains(o.value),
+                    selectedColor: active?.withValues(alpha: 0.2),
+                    checkmarkColor: active,
+                    onSelected: canPick(o) ? (v) => select(o.value, v) : null,
                   ),
-              ],
-              selected: selected.toSet(),
-              multiSelectionEnabled: _multi,
-              emptySelectionAllowed: true,
-              style: active == null
-                  ? null
-                  : SegmentedButton.styleFrom(
-                      selectedBackgroundColor: active.withValues(alpha: 0.18),
-                      selectedForegroundColor: active,
-                    ),
-              onSelectionChanged: interactive
-                  ? (set) {
-                      if (_multi && max != null && set.length > max) return;
-                      controller.setValue(
-                        field.id,
-                        _multi ? set.toList() : set.firstOrNull,
-                      );
-                    }
-                  : null,
-            );
-          default: // chips
-            body = _arrange([
-              for (final o in options)
-                FilterChip(
-                  label: label(o),
-                  avatar: _optionIcon(o),
-                  selected: selected.contains(o.value),
-                  selectedColor: active?.withValues(alpha: 0.2),
-                  checkmarkColor: active,
-                  onSelected: canPick(o) ? (v) => select(o.value, v) : null,
-                ),
-              if (canAddCustom)
-                ActionChip(
-                  avatar: const Icon(Icons.add, size: 18),
-                  label: Text(addLabel),
-                  onPressed: () =>
-                      promptCustomOption(context, field, controller),
-                ),
-            ]);
+                if (canAddCustom)
+                  ActionChip(
+                    avatar: const Icon(Icons.add, size: 18),
+                    label: Text(addLabel),
+                    onPressed: () =>
+                        promptCustomOption(context, field, controller),
+                  ),
+              ]);
+          }
         }
 
         final showAddButton = canAddCustom && field.type != FieldType.chips;
