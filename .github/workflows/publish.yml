@@ -1,0 +1,75 @@
+name: Publish to pub.dev
+
+# Runs only when a version tag such as v1.2.0 is pushed. Nothing here runs on
+# normal pushes or pull requests. Publishing uses pub.dev automated publishing
+# (OIDC), so no pub.dev token or password is stored in GitHub.
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Add required reviewers to this environment (Settings -> Environments ->
+    # pub.dev) so the owner has to approve every release.
+    environment: pub.dev
+    permissions:
+      contents: read
+      id-token: write # lets pub.dev verify this run through OIDC
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Tag must match the pubspec version
+        run: |
+          version=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          if [ "v$version" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match pubspec version $version"
+            exit 1
+          fi
+          grep -q "^## $version" CHANGELOG.md || {
+            echo "CHANGELOG.md has no entry for $version"
+            exit 1
+          }
+
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: flutter analyze --fatal-infos
+      - run: flutter test
+      - run: flutter pub publish --dry-run
+      - name: Publish
+        run: flutter pub publish --force
+
+  release:
+    name: GitHub release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release for this tag
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Create release from RELEASE_NOTES.md
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "services_rj ${GITHUB_REF_NAME#v}" \
+            --notes-file RELEASE_NOTES.md
