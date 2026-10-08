@@ -46,6 +46,8 @@ class DynamicFormThemeData {
   /// Creates theme data.
   const DynamicFormThemeData({
     this.fieldSpacing = 16,
+    this.formPadding,
+    this.fieldPadding,
     this.useCupertino = false,
     this.dense = false,
     this.errorBuilder,
@@ -59,6 +61,15 @@ class DynamicFormThemeData {
 
   /// Vertical gap between fields.
   final double fieldSpacing;
+
+  /// Default space around every form (the JSON root `padding` and
+  /// `DynamicForm.padding` win). Use `EdgeInsets.all(16)` for the
+  /// standard page margin.
+  final EdgeInsets? formPadding;
+
+  /// Default inner padding of every field (JSON `fieldPadding` and a
+  /// field's own `padding` win).
+  final EdgeInsets? fieldPadding;
 
   /// Render pickers with Cupertino styling where applicable.
   final bool useCupertino;

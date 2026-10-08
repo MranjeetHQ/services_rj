@@ -4,6 +4,7 @@ import '../controllers/dynamic_form_controller.dart';
 import '../models/field_config.dart';
 import '../models/field_enums.dart';
 import '../models/field_style.dart';
+import '../models/field_type.dart';
 import '../models/text_preset.dart';
 import '../theme/dynamic_form_theme.dart';
 import '../utils/field_utils.dart';
@@ -77,10 +78,20 @@ InputDecoration buildFieldDecoration(
   // `above` draws the label outside the field (see FieldWrapper); `hidden`
   // shows the label text as the hint instead.
   final hint = field.hint ?? preset?.hint;
+  final marked = FieldLabel.showsMark(context, field, controller);
 
   var decoration = InputDecoration(
-    labelText: position == LabelPosition.floating ? field.label : null,
-    hintText: position == LabelPosition.hidden ? hint ?? field.label : hint,
+    labelText: position == LabelPosition.floating && !marked
+        ? field.label
+        : null,
+    // A marked label is a widget so the `*` can be coloured and follow
+    // `requiredWhen` without rebuilding the field.
+    label: position == LabelPosition.floating && marked
+        ? FieldLabel(field: field, controller: controller)
+        : null,
+    hintText: position == LabelPosition.hidden
+        ? hint ?? FieldLabel.plainText(field, controller, context)
+        : hint,
     helperText: field.helperText,
     errorText: errorText,
     isDense: style.dense ?? theme.dense,
@@ -202,10 +213,141 @@ Widget? buildFieldLabel(
   final style = resolveFieldStyle(context, field, controller).labelStyle;
   return Padding(
     padding: const EdgeInsets.only(bottom: 8),
-    child: Text(
-      field.label!,
+    child: FieldLabel(
+      field: field,
+      controller: controller,
       style: (theme.labelStyle ?? Theme.of(context).textTheme.titleSmall)
           ?.merge(style),
     ),
   );
+}
+
+/// A field's label followed by its required / optional mark (style key
+/// `requiredMark`): a red `*` on required fields by default, or
+/// "(optional)" on the others. Listens to the field's required state, so
+/// `requiredWhen` and `DynamicFormController.setRequired` update the mark
+/// at once. Screen readers hear "required" instead of "star".
+class FieldLabel extends StatelessWidget {
+  /// Creates a label for [field].
+  const FieldLabel({
+    super.key,
+    required this.field,
+    required this.controller,
+    this.style,
+  });
+
+  /// Field whose label is shown.
+  final FieldConfig field;
+
+  /// Owning form controller.
+  final DynamicFormController controller;
+
+  /// Text style of the label (the mark merges `requiredMarkStyle`).
+  final TextStyle? style;
+
+  /// Field types that hold a value the user enters, so required / optional
+  /// means something. Display, container and hidden fields never get a mark.
+  static bool canBeMarked(FieldConfig field) =>
+      field.label != null &&
+      !field.readOnly &&
+      !const {
+        FieldType.hidden,
+        FieldType.readOnly,
+        FieldType.label,
+        FieldType.divider,
+        FieldType.spacer,
+        FieldType.sectionHeader,
+        FieldType.group,
+        FieldType.expansion,
+      }.contains(field.type);
+
+  /// Whether [field]'s label may show a mark in this form.
+  static bool showsMark(
+    BuildContext context,
+    FieldConfig field,
+    DynamicFormController controller,
+  ) =>
+      canBeMarked(field) &&
+      controller.hasField(field.id) &&
+      _mode(context, field, controller) != RequiredMark.none;
+
+  static RequiredMark _mode(
+    BuildContext context,
+    FieldConfig field,
+    DynamicFormController controller,
+  ) =>
+      resolveFieldStyle(context, field, controller).requiredMark ??
+      RequiredMark.asterisk;
+
+  /// The label and mark as plain text (`Full name *`), for hints.
+  static String? plainText(
+    FieldConfig field,
+    DynamicFormController controller,
+    BuildContext context,
+  ) {
+    final label = field.label;
+    if (label == null || !showsMark(context, field, controller)) return label;
+    final mark = _markText(
+      _mode(context, field, controller),
+      controller.state(field.id).required.value,
+      controller,
+    );
+    return mark == null ? label : '$label $mark';
+  }
+
+  static String? _markText(
+    RequiredMark mode,
+    bool required,
+    DynamicFormController controller,
+  ) {
+    if (required &&
+        (mode == RequiredMark.asterisk || mode == RequiredMark.both)) {
+      return '*';
+    }
+    if (!required &&
+        (mode == RequiredMark.optional || mode == RequiredMark.both)) {
+      return controller.l10n.message('optionalMark');
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final label = field.label ?? '';
+    if (!showsMark(context, field, controller)) {
+      return Text(label, style: style);
+    }
+    final mode = _mode(context, field, controller);
+    final markStyle = resolveFieldStyle(
+      context,
+      field,
+      controller,
+    ).requiredMarkStyle;
+    final scheme = Theme.of(context).colorScheme;
+    return ValueListenableBuilder<bool>(
+      valueListenable: controller.state(field.id).required,
+      builder: (context, required, _) {
+        final mark = _markText(mode, required, controller);
+        return Text.rich(
+          TextSpan(
+            text: label,
+            children: [
+              if (mark != null)
+                TextSpan(
+                  text: ' $mark',
+                  semanticsLabel: required
+                      ? ', ${controller.l10n.message('requiredMark')}'
+                      : null,
+                  style: TextStyle(
+                    color: required ? scheme.error : scheme.onSurfaceVariant,
+                    fontWeight: required ? null : FontWeight.normal,
+                  ).merge(markStyle),
+                ),
+            ],
+          ),
+          style: style,
+        );
+      },
+    );
+  }
 }

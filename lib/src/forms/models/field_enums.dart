@@ -313,6 +313,156 @@ enum MediaSource {
   static MediaSource? fromString(Object? raw) => _byName(values, raw);
 }
 
+/// Which mark a field label shows (style key `requiredMark`).
+enum RequiredMark {
+  /// A red `*` after the label of required fields (default).
+  asterisk,
+
+  /// "(optional)" after the label of optional fields; required fields stay
+  /// plain. Suits forms where most fields are required.
+  optional,
+
+  /// `*` on required fields and "(optional)" on the others.
+  both,
+
+  /// No mark.
+  none;
+
+  /// Parses a required mark name.
+  static RequiredMark? fromString(Object? raw) => _byName(values, raw, const {
+    'star': RequiredMark.asterisk,
+    'required': RequiredMark.asterisk,
+  });
+}
+
+/// How the options of a radio group, checkbox group, or a single checkbox /
+/// radio / switch are drawn (field key `optionStyle`).
+enum OptionStyle {
+  /// Plain list tiles with the control in front (default).
+  standard,
+
+  /// Each option in its own bordered card; the selected card is tinted and
+  /// outlined. Good for options with a description.
+  card,
+
+  /// Compact pill per option. Wraps onto several rows by default.
+  chip,
+
+  /// Button-like boxes without a visible control; the selected box is
+  /// filled. Good for short labels in a row or grid.
+  button;
+
+  /// Parses an option style name.
+  static OptionStyle? fromString(Object? raw) => _byName(values, raw, const {
+    'default': OptionStyle.standard,
+    'pill': OptionStyle.chip,
+    'tile': OptionStyle.card,
+  });
+}
+
+/// Shape of checkbox controls (field key `controlShape`).
+enum ControlShape {
+  /// Square corners.
+  square,
+
+  /// Slightly rounded corners (Material default).
+  rounded,
+
+  /// Round checkbox.
+  circle;
+
+  /// Parses a control shape name.
+  static ControlShape? fromString(Object? raw) => _byName(values, raw);
+}
+
+/// Where the checkbox / radio control sits in an option (field key
+/// `controlPosition`).
+enum ControlPosition {
+  /// Before the label (default).
+  leading,
+
+  /// After the label.
+  trailing,
+
+  /// Hidden; the option's background and border show the selection.
+  none;
+
+  /// Parses a control position name.
+  static ControlPosition? fromString(Object? raw) => _byName(values, raw);
+}
+
+/// How the searchable dropdown's list opens (field key `pickerStyle`).
+enum PickerStyle {
+  /// Rounded modal bottom sheet with a drag handle (default).
+  bottomSheet,
+
+  /// Centered dialog. Suits tablets, desktop and web.
+  dialog,
+
+  /// Full-screen page. Suits very long lists on phones.
+  fullScreen;
+
+  /// Parses a picker style name.
+  static PickerStyle? fromString(Object? raw) => _byName(values, raw, const {
+    'sheet': PickerStyle.bottomSheet,
+    'modal': PickerStyle.bottomSheet,
+    'page': PickerStyle.fullScreen,
+  });
+}
+
+/// How a multi-select dropdown shows its selection when closed (field key
+/// `selectedDisplay`).
+enum SelectedDisplay {
+  /// Removable chips (default).
+  chips,
+
+  /// Labels joined with commas.
+  text,
+
+  /// "3 selected".
+  count;
+
+  /// Parses a selected display name.
+  static SelectedDisplay? fromString(Object? raw) => _byName(values, raw);
+}
+
+/// Named spacing values accepted wherever the JSON takes a padding, margin
+/// or spacing (`"padding": "standard"`).
+enum FormSpacing {
+  /// 0 logical pixels.
+  none(0),
+
+  /// 8 logical pixels.
+  compact(8),
+
+  /// 16 logical pixels, the Material standard page margin.
+  standard(16),
+
+  /// 24 logical pixels.
+  comfortable(24),
+
+  /// 32 logical pixels.
+  spacious(32);
+
+  const FormSpacing(this.value);
+
+  /// Size in logical pixels.
+  final double value;
+
+  /// Parses a spacing name.
+  static FormSpacing? fromString(Object? raw) => _byName(values, raw, const {
+    'small': FormSpacing.compact,
+    'medium': FormSpacing.standard,
+    'large': FormSpacing.comfortable,
+  });
+
+  /// Reads a number or a spacing name (`16`, `"standard"`).
+  static double? parse(Object? raw) {
+    if (raw is num) return raw.toDouble();
+    return fromString(raw)?.value;
+  }
+}
+
 /// Shared parsing helper for any app-defined enum.
 ///
 /// ```dart

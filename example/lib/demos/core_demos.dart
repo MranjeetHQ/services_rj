@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/demo_widgets.dart';
+import 'core/app_setup_demo.dart';
 import 'core/buttons_demo.dart';
 import 'core/dashboard_demo.dart';
 import 'core/diagnostics_demo.dart';
 import 'core/encryption_demo.dart';
+import 'core/extensions_demo.dart';
 import 'core/form_helpers_demo.dart';
 import 'core/storage_demo.dart';
 import 'core/theme_demo.dart';
@@ -12,6 +14,12 @@ import 'core/ui_helpers_demo.dart';
 
 /// Home-screen entries for the core (non-networking, non-form) features.
 final List<DemoEntry> coreDemos = [
+  DemoEntry(
+    icon: Icons.rocket_launch_outlined,
+    title: 'App setup',
+    subtitle: 'AppSetup.run, ServicesApp, AppKeys and a theme settings screen.',
+    builder: (_) => const AppSetupDemo(),
+  ),
   DemoEntry(
     icon: Icons.tune,
     title: 'AppController',
@@ -33,7 +41,8 @@ final List<DemoEntry> coreDemos = [
   DemoEntry(
     icon: Icons.palette_outlined,
     title: 'Theme',
-    subtitle: 'AppThemeConfig editor, previews and theme mode.',
+    subtitle:
+        'Every AppThemeConfig option, previews, apply to app, mode and accent.',
     builder: (_) => const ThemeDemo(),
   ),
   DemoEntry(
@@ -47,6 +56,12 @@ final List<DemoEntry> coreDemos = [
     title: 'UI helpers',
     subtitle: 'Snackbar, dialogs, responsive, extensions, scaffold.',
     builder: (_) => const UiHelpersDemo(),
+  ),
+  DemoEntry(
+    icon: Icons.text_fields,
+    title: 'Extensions',
+    subtitle: 'String, double and number extensions with live input.',
+    builder: (_) => const ExtensionsDemo(),
   ),
   DemoEntry(
     icon: Icons.rule,

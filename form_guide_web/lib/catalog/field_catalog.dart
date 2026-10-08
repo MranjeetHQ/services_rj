@@ -281,8 +281,17 @@ const List<FieldDoc> fieldCatalog = [
   FieldDoc(
     type: FieldType.dropdown,
     category: FieldCategory.selection,
-    summary: 'Single choice from a menu. Supports `allowCustomOptions`.',
-    valueType: 'option value',
+    summary:
+        'Single choice from a menu. Supports `allowCustomOptions`. Add '
+        '`searchable`, `multiple` or `searchSource` to get the searchable '
+        'picker.',
+    valueType: 'option value, or List with `multiple`',
+    keys: {
+      'searchable': 'Open a searchable picker instead of the menu.',
+      'multiple': 'Pick several values (searchable picker, no search box).',
+      'searchSource':
+          'Search an API as the user types (see searchableDropdown).',
+    },
     example: {
       'type': 'dropdown',
       'id': 'membership',
@@ -306,17 +315,62 @@ const List<FieldDoc> fieldCatalog = [
     },
   ),
   FieldDoc(
+    type: FieldType.searchableDropdown,
+    category: FieldCategory.selection,
+    summary:
+        'Dropdown with a search box in a bottom sheet, dialog or full-screen '
+        'picker. Options from a local list, an API loaded once '
+        '(`optionsLoader`), or an API searched as you type '
+        '(`searchSource`). `multiple` picks several.',
+    valueType: 'option value, or List with `multiple`',
+    aliases: ['searchable', 'dropdownSearch', 'searchSelect'],
+    keys: {
+      'multiple': 'Select several values (List).',
+      'searchSource': 'Registered search function called as the user types.',
+      'minSearchLength': 'Characters before `searchSource` runs (0).',
+      'debounceMs': 'Delay after typing before searching (350).',
+      'showSearchBox': 'Show the search field (true).',
+      'searchHint': 'Search field placeholder.',
+      'noResultsText': 'Text when nothing matches.',
+      'autofocusSearch': 'Open the keyboard with the picker (true).',
+      'pickerStyle': '`bottomSheet` (default), `dialog`, `fullScreen`.',
+      'pickerHeight': 'Bottom sheet height fraction (0.75).',
+      'selectedDisplay': 'Multiple, closed: `chips`, `text`, `count`.',
+      'showSelectAll': 'Select all / Clear buttons (false).',
+      'showClear': 'Clear button in the field (true).',
+    },
+    example: {
+      'type': 'searchableDropdown',
+      'id': 'homeCity',
+      'label': 'Home city',
+      'hint': 'Search 8 cities',
+      'searchHint': 'City name',
+      'prefixIcon': 'location',
+      'options': [
+        'Ahmedabad',
+        'Bengaluru',
+        'Chennai',
+        'Delhi',
+        'Hyderabad',
+        'Kolkata',
+        'Mumbai',
+        'Pune',
+      ],
+    },
+  ),
+  FieldDoc(
     type: FieldType.radioGroup,
     category: FieldCategory.selection,
     summary:
         'One choice from visible radio buttons. Supports every '
-        '`optionLayout`.',
+        '`optionLayout` and `optionStyle` (standard, card, chip, button).',
     valueType: 'option value',
+    keys: {'controlPosition': '`leading` (default), `trailing` or `none`.'},
     example: {
       'type': 'radioGroup',
       'id': 'delivery',
       'label': 'Delivery speed',
-      'optionLayout': 'vertical',
+      'optionStyle': 'card',
       'options': [
         {'label': 'Standard', 'value': 'std', 'description': '3–5 days'},
         {'label': 'Express', 'value': 'exp', 'description': 'Next day'},
@@ -326,8 +380,14 @@ const List<FieldDoc> fieldCatalog = [
   FieldDoc(
     type: FieldType.checkboxGroup,
     category: FieldCategory.selection,
-    summary: 'Several choices as checkboxes. Supports `minItems`, `maxItems`.',
+    summary:
+        'Several choices as checkboxes. Supports `minItems`, `maxItems` '
+        'and `optionStyle` (standard, card, chip, button).',
     valueType: 'List',
+    keys: {
+      'controlShape': 'Checkbox shape: `square`, `rounded`, `circle`.',
+      'controlPosition': '`leading` (default), `trailing` or `none`.',
+    },
     example: {
       'type': 'checkboxGroup',
       'id': 'amenities',
@@ -415,8 +475,14 @@ const List<FieldDoc> fieldCatalog = [
   FieldDoc(
     type: FieldType.checkbox,
     category: FieldCategory.toggle,
-    summary: 'Single checkbox. `required` means it must be ticked.',
+    summary:
+        'Single checkbox. `required` means it must be ticked. '
+        '`optionStyle: card` draws it as a bordered card.',
     valueType: 'bool',
+    keys: {
+      'controlShape': '`square`, `rounded` or `circle`.',
+      'controlPosition': '`leading` (default) or `trailing`.',
+    },
     example: {
       'type': 'checkbox',
       'id': 'agree',

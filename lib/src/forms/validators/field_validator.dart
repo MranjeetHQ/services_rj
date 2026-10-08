@@ -15,6 +15,17 @@ abstract class FieldValidator {
   /// The JSON config that produced this validator.
   final ValidatorConfig config;
 
+  /// Whether this validator also runs when an **optional** field is empty.
+  ///
+  /// The rule of the form engine is: a required field must have a value,
+  /// and an optional field may be left empty. So for an optional, empty
+  /// field the controller skips every validator whose [checksEmpty] is
+  /// false (all built-in format, length, range and item-count checks).
+  /// Custom validators return true, because cross-field rules such as
+  /// "phone or email" need to see empty values. Override in your own
+  /// validators when needed.
+  bool get checksEmpty => false;
+
   /// Validates [value]; [formData] enables cross-field rules; returns an
   /// error message or `null` when valid.
   String? validate(
@@ -236,9 +247,18 @@ class MatchFieldValidator extends FieldValidator {
     Object? value,
     Map<String, dynamic> formData,
     FormLocalizations l10n,
-  ) => value == formData[config.value.toString()]
-      ? null
-      : config.message ?? l10n.message('matchField');
+  ) {
+    final other = formData[config.value.toString()];
+    // Both empty counts as matching (null and '' alike).
+    if (FieldValidator.isEmpty(value) && FieldValidator.isEmpty(other)) {
+      return null;
+    }
+    return value == other ? null : config.message ?? l10n.message('matchField');
+  }
+
+  /// Runs when this field is empty but the other one is not.
+  @override
+  bool get checksEmpty => true;
 }
 
 /// `{"type": "passwordStrength"}` — upper + lower + digit + symbol, min 8.
@@ -314,6 +334,10 @@ class CustomValidator extends FieldValidator {
 
   /// The validation function.
   final CustomValidatorFn fn;
+
+  /// Custom rules decide for themselves what an empty value means.
+  @override
+  bool get checksEmpty => true;
 
   @override
   String? validate(

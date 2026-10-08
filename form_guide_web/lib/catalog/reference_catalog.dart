@@ -44,7 +44,9 @@ const List<KeyDoc> fieldPropertyDocs = [
   KeyDoc(
     'required',
     'bool',
-    'Must have a value (checkbox: must be ticked).',
+    'Must have a value (checkbox: must be ticked). The label gets a red `*` '
+        '(see style `requiredMark`). An optional field may be left empty: its '
+        'format, length and item-count checks run only once it has a value.',
     group: 'State',
   ),
   KeyDoc(
@@ -188,11 +190,18 @@ const List<KeyDoc> fieldPropertyDocs = [
     aliasOf: 'style',
     group: 'Decoration',
   ),
-  KeyDoc('padding', 'number | Map', 'Inner padding.', group: 'Layout'),
+  KeyDoc(
+    'padding',
+    'number | spacing | Map',
+    'Inner padding. A number, a spacing name (`none` 0, `compact` 8, '
+        '`standard` 16, `comfortable` 24, `spacious` 32) or a Map of '
+        'left/top/right/bottom or horizontal/vertical.',
+    group: 'Layout',
+  ),
   KeyDoc(
     'margin',
-    'number | Map',
-    'Outer margin (default: bottom gap).',
+    'number | spacing | Map',
+    'Outer margin (default: a bottom gap of `fieldSpacing`).',
     group: 'Layout',
   ),
   KeyDoc('width', 'number', 'Fixed width.', group: 'Layout'),
@@ -257,9 +266,19 @@ const List<KeyDoc> fieldPropertyDocs = [
     group: 'Options',
   ),
   KeyDoc(
+    'optionStyle',
+    'OptionStyle',
+    'How radio / checkbox options look: `standard` tiles, `card`, `chip` '
+        'or `button`. Also styles a single checkbox, radio or switch. '
+        'Colours and shapes come from the style keys `selectedColor`, '
+        '`selectedBorderColor`, `optionBorderColor`, `optionRadius`, '
+        '`optionSpacing`, `optionPadding` and `selectedTextStyle`.',
+    group: 'Options',
+  ),
+  KeyDoc(
     'columns',
     'int',
-    'Columns for the `grid` layout (2).',
+    'Columns for the `grid` layout (2; `button` style: up to 3).',
     group: 'Options',
   ),
   KeyDoc(
@@ -391,6 +410,48 @@ const List<KeyDoc> styleDocs = [
   ),
   KeyDoc('containerColor', 'color', 'Background of group / repeater entries.'),
   KeyDoc('containerRadius', 'number', 'Corner radius of those containers.'),
+  KeyDoc(
+    'selectedColor',
+    'color',
+    'Background of a selected option (`card`, `chip`, `button` option '
+        'styles and searchable dropdown rows). Default: a tint of '
+        '`activeColor`.',
+  ),
+  KeyDoc(
+    'selectedBorderColor',
+    'color',
+    'Border of a selected option. Default: `activeColor`.',
+  ),
+  KeyDoc('optionBorderColor', 'color', 'Border of an unselected option.'),
+  KeyDoc(
+    'optionRadius',
+    'number',
+    'Corner radius of each option (card 12, button 10, chip fully round).',
+  ),
+  KeyDoc(
+    'optionSpacing',
+    'number | spacing',
+    'Gap between options (8). Takes spacing names like `compact`.',
+  ),
+  KeyDoc(
+    'optionPadding',
+    'number | spacing | Map',
+    'Padding inside each option.',
+  ),
+  KeyDoc('selectedTextStyle', 'TextStyle', 'Label of a selected option.'),
+  KeyDoc(
+    'requiredMark',
+    'asterisk | optional | both | none',
+    'Mark after the label: `asterisk` puts a red `*` on required fields '
+        '(default), `optional` adds "(optional)" to the others, `both` does '
+        'both, `none` shows nothing. Follows `requiredWhen` live. Set it on '
+        'the form `style` to apply it everywhere.',
+  ),
+  KeyDoc(
+    'requiredMarkStyle',
+    'TextStyle',
+    'Style of the `*` / "(optional)" mark (default: error colour / muted).',
+  ),
 ];
 
 /// Built-in validators. KEEP IN SYNC with [ValidatorType].
@@ -411,7 +472,8 @@ const Map<ValidatorType, String> validatorDocs = {
   ValidatorType.passwordStrength:
       'Upper, lower, digit and symbol; length ≥ `value` (8).',
   ValidatorType.minItems:
-      'At least `value` selections / entries. Fails on empty too.',
+      'At least `value` selections / entries. An empty optional field '
+      'passes; add `required` to demand a selection.',
   ValidatorType.maxItems: 'At most `value` selections / entries.',
   ValidatorType.custom:
       'Function passed to the controller\'s '
@@ -458,4 +520,121 @@ final Map<String, List<String>> jsonEnumDocs = {
     for (final v in FieldStyleVariant.values) v.name,
   ],
   'image source (MediaSource)': [for (final v in MediaSource.values) v.name],
+  'optionStyle (OptionStyle)': [for (final v in OptionStyle.values) v.name],
+  'style.requiredMark (RequiredMark)': [
+    for (final v in RequiredMark.values) v.name,
+  ],
+  'controlShape (ControlShape)': [for (final v in ControlShape.values) v.name],
+  'controlPosition (ControlPosition)': [
+    for (final v in ControlPosition.values) v.name,
+  ],
+  'pickerStyle (PickerStyle)': [for (final v in PickerStyle.values) v.name],
+  'selectedDisplay (SelectedDisplay)': [
+    for (final v in SelectedDisplay.values) v.name,
+  ],
+  'padding / spacing names (FormSpacing)': [
+    for (final v in FormSpacing.values) '${v.name} (${v.value.toInt()})',
+  ],
 };
+
+/// Type-specific keys of the searchable dropdown (also read by `dropdown`
+/// with `searchable`, `multiple` or `searchSource`), with default and when
+/// to use each. Shown on the Dropdowns & search page and in the catalog.
+const List<(String, String, String, String)> searchableDropdownKeys = [
+  (
+    'multiple',
+    'false',
+    'Select several values; the value becomes a List.',
+    'Tags, languages, team members.',
+  ),
+  (
+    'searchSource',
+    '—',
+    'Name of a search function registered with `FormSearchSources.register` '
+        'or `DynamicFormController(searchSources:)`. It is called with the '
+        'typed text as the user types.',
+    'Large or server-side lists (users, products, cities).',
+  ),
+  (
+    'minSearchLength',
+    '0',
+    'Characters needed before `searchSource` is called. Until then the '
+        'static `options` (if any) are shown.',
+    'Expensive APIs; set 2–3.',
+  ),
+  (
+    'debounceMs',
+    '350',
+    'Wait after the last keystroke before calling `searchSource`.',
+    'Lower for fast APIs, higher for rate-limited ones.',
+  ),
+  (
+    'showSearchBox',
+    'true',
+    'Show the search field in the picker. `dropdown` with `multiple` '
+        'defaults to false.',
+    'Turn off for short multi-select lists.',
+  ),
+  (
+    'searchHint',
+    '"Search"',
+    'Placeholder of the search field.',
+    'Say what can be searched: "Name or employee ID".',
+  ),
+  (
+    'noResultsText',
+    '"No results"',
+    'Shown when nothing matches.',
+    'Point to a next step: "Not listed? Add it below".',
+  ),
+  (
+    'autofocusSearch',
+    'true',
+    'Open the keyboard as soon as the picker opens.',
+    'Set false when most users scroll instead of type.',
+  ),
+  (
+    'pickerStyle',
+    'bottomSheet',
+    '`bottomSheet`, `dialog` or `fullScreen`.',
+    'Dialog on tablet / web; full screen for very long lists.',
+  ),
+  (
+    'pickerHeight',
+    '0.75',
+    'Bottom sheet height as a fraction of the screen (0.3–1).',
+    'Smaller for short lists.',
+  ),
+  (
+    'selectedDisplay',
+    'chips',
+    'How a multiple selection shows when closed: `chips`, `text` or '
+        '`count`.',
+    '`count` when many items can be picked.',
+  ),
+  (
+    'showSelectAll',
+    'false',
+    'Select all / Clear buttons in a multiple picker (respects '
+        '`maxItems`).',
+    'Filters and bulk choices.',
+  ),
+  (
+    'showClear',
+    'true',
+    'Clear button in the closed field.',
+    'Turn off for fields that must keep a value.',
+  ),
+  (
+    'maxItems / minItems',
+    '—',
+    'Limits for a multiple selection (also validators).',
+    '"Pick up to 3".',
+  ),
+  (
+    'allowCustomOptions',
+    'false',
+    'Offer "Add <typed text>" when nothing matches.',
+    'Open lists such as skills or tags.',
+  ),
+];

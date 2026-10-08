@@ -72,6 +72,15 @@ class FieldStyleConfig {
     this.textAlign,
     this.containerColor,
     this.containerRadius,
+    this.selectedColor,
+    this.selectedBorderColor,
+    this.optionBorderColor,
+    this.optionRadius,
+    this.optionSpacing,
+    this.optionPadding,
+    this.selectedTextStyle,
+    this.requiredMark,
+    this.requiredMarkStyle,
   });
 
   /// Parses a style config from a JSON map.
@@ -101,6 +110,15 @@ class FieldStyleConfig {
       textAlign: parseTextAlign(json['textAlign']),
       containerColor: parseColor(json['containerColor']),
       containerRadius: (json['containerRadius'] as num?)?.toDouble(),
+      selectedColor: parseColor(json['selectedColor']),
+      selectedBorderColor: parseColor(json['selectedBorderColor']),
+      optionBorderColor: parseColor(json['optionBorderColor']),
+      optionRadius: (json['optionRadius'] as num?)?.toDouble(),
+      optionSpacing: FormSpacing.parse(json['optionSpacing']),
+      optionPadding: parseEdgeInsets(json['optionPadding']),
+      selectedTextStyle: parseTextStyle(json['selectedTextStyle']),
+      requiredMark: RequiredMark.fromString(json['requiredMark']),
+      requiredMarkStyle: parseTextStyle(json['requiredMarkStyle']),
     );
   }
 
@@ -130,6 +148,15 @@ class FieldStyleConfig {
     'textAlign',
     'containerColor',
     'containerRadius',
+    'selectedColor',
+    'selectedBorderColor',
+    'optionBorderColor',
+    'optionRadius',
+    'optionSpacing',
+    'optionPadding',
+    'selectedTextStyle',
+    'requiredMark',
+    'requiredMarkStyle',
   };
 
   /// Border/background variant.
@@ -196,6 +223,38 @@ class FieldStyleConfig {
   /// Corner radius of container-like fields.
   final double? containerRadius;
 
+  /// Background of a selected option (card, chip and button option styles,
+  /// and selected rows in the searchable dropdown). Defaults to a tint of
+  /// [activeColor] or the theme primary color.
+  final Color? selectedColor;
+
+  /// Border of a selected option (card, chip and button option styles).
+  final Color? selectedBorderColor;
+
+  /// Border of an unselected option (card, chip and button option styles).
+  final Color? optionBorderColor;
+
+  /// Corner radius of each option (card, chip and button option styles,
+  /// searchable dropdown rows).
+  final double? optionRadius;
+
+  /// Gap between options. A number or a spacing name such as `"compact"`.
+  final double? optionSpacing;
+
+  /// Padding inside each option (card, chip and button option styles).
+  final EdgeInsets? optionPadding;
+
+  /// Label style of a selected option.
+  final TextStyle? selectedTextStyle;
+
+  /// Which fields get a mark after their label: `asterisk` (required
+  /// fields, default), `optional` (optional fields), `both` or `none`.
+  final RequiredMark? requiredMark;
+
+  /// Style of the `*` / "(optional)" mark. Defaults to the error colour for
+  /// `*` and a muted colour for "(optional)".
+  final TextStyle? requiredMarkStyle;
+
   /// Whether any property is set.
   bool get isNotEmpty => toJson().isNotEmpty;
 
@@ -226,6 +285,15 @@ class FieldStyleConfig {
         textAlign: l.textAlign ?? r.textAlign,
         containerColor: l.containerColor ?? r.containerColor,
         containerRadius: l.containerRadius ?? r.containerRadius,
+        selectedColor: l.selectedColor ?? r.selectedColor,
+        selectedBorderColor: l.selectedBorderColor ?? r.selectedBorderColor,
+        optionBorderColor: l.optionBorderColor ?? r.optionBorderColor,
+        optionRadius: l.optionRadius ?? r.optionRadius,
+        optionSpacing: l.optionSpacing ?? r.optionSpacing,
+        optionPadding: l.optionPadding ?? r.optionPadding,
+        selectedTextStyle: l.selectedTextStyle ?? r.selectedTextStyle,
+        requiredMark: l.requiredMark ?? r.requiredMark,
+        requiredMarkStyle: l.requiredMarkStyle ?? r.requiredMarkStyle,
       );
     }
     return r;
@@ -256,6 +324,20 @@ class FieldStyleConfig {
     if (textAlign != null) 'textAlign': textAlign!.name,
     if (containerColor != null) 'containerColor': colorToHex(containerColor!),
     if (containerRadius != null) 'containerRadius': containerRadius,
+    if (selectedColor != null) 'selectedColor': colorToHex(selectedColor!),
+    if (selectedBorderColor != null)
+      'selectedBorderColor': colorToHex(selectedBorderColor!),
+    if (optionBorderColor != null)
+      'optionBorderColor': colorToHex(optionBorderColor!),
+    if (optionRadius != null) 'optionRadius': optionRadius,
+    if (optionSpacing != null) 'optionSpacing': optionSpacing,
+    if (optionPadding != null)
+      'optionPadding': edgeInsetsToJson(optionPadding!),
+    if (selectedTextStyle != null)
+      'selectedTextStyle': textStyleToJson(selectedTextStyle!),
+    if (requiredMark != null) 'requiredMark': requiredMark!.name,
+    if (requiredMarkStyle != null)
+      'requiredMarkStyle': textStyleToJson(requiredMarkStyle!),
   };
 
   /// Parses `#RRGGBB`, `#AARRGGBB` or `0xAARRGGBB` color strings.
@@ -277,12 +359,20 @@ class FieldStyleConfig {
 
   /// Parses `16` (all sides) or `{"left": 8, "top": 4, ...}`. Also accepts
   /// `{"horizontal": 12, "vertical": 8}`.
+  ///
+  /// Every number can also be a [FormSpacing] name: `"standard"` (16),
+  /// `"compact"` (8), `"comfortable"` (24), `"spacious"` (32) or `"none"`,
+  /// so `"padding": "standard"` or `{"horizontal": "standard"}` work.
   static EdgeInsets? parseEdgeInsets(Object? raw) {
     if (raw is EdgeInsets) return raw;
     if (raw is num) return EdgeInsets.all(raw.toDouble());
+    if (raw is String) {
+      final v = FormSpacing.parse(raw);
+      return v == null ? null : EdgeInsets.all(v);
+    }
     if (raw is Map) {
       final m = Map<String, dynamic>.from(raw);
-      double d(String k) => (m[k] as num?)?.toDouble() ?? 0;
+      double d(String k) => FormSpacing.parse(m[k]) ?? 0;
       final h = d('horizontal');
       final v = d('vertical');
       return EdgeInsets.fromLTRB(

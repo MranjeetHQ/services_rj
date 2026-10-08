@@ -16,66 +16,52 @@ import 'forms/job_application.dart';
 import 'forms/styling_lab.dart';
 import 'widgets/demo_widgets.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+Future<void> main() {
   registerDemoEnums();
   registerDemoAdapters();
 
   // Every feature is switched on so each demo page is live. A real app
   // enables only what it uses, e.g. `AppFeatures(sharedPref: true)`.
-  try {
-    await AppController.initialize(
-      features: const AppFeatures(
-        sharedPref: true,
-        theme: true,
-        network: true,
-        apiCache: true,
-        encryption: true,
-        connectivity: true,
-        logger: true,
-        networkLogs: true,
-        permissions: true,
-      ),
-      apiConfig: ApiConfig(
-        baseUrl: 'https://jsonplaceholder.typicode.com',
-        printLogs: true,
-        tokenHeaderKey: 'Authorization',
-        onUnauthorized: () async => demoNetworkEvents.add('onUnauthorized'),
-        onSessionExpired: () async => demoNetworkEvents.add('onSessionExpired'),
-        onUserBanned: (message) async =>
-            demoNetworkEvents.add('onUserBanned: $message'),
-        onError: (message) => demoNetworkEvents.add('onError: $message'),
-      ),
-      cacheConfig: const CacheConfig(defaultTtl: Duration(minutes: 2)),
-    );
-  } catch (e) {
-    // Keep the demo usable (forms etc.) if a platform feature is missing.
-    AppLogger.error('AppController.initialize failed: $e');
-  }
-  runApp(const FormsDemoApp());
+  return AppSetup.run(
+    features: const AppFeatures(
+      sharedPref: true,
+      theme: true,
+      network: true,
+      apiCache: true,
+      encryption: true,
+      connectivity: true,
+      logger: true,
+      networkLogs: true,
+      permissions: true,
+    ),
+    themeConfig: const AppThemeConfig(seedColor: Colors.teal),
+    apiConfig: ApiConfig(
+      baseUrl: 'https://jsonplaceholder.typicode.com',
+      printLogs: true,
+      tokenHeaderKey: 'Authorization',
+      onUnauthorized: () async => demoNetworkEvents.add('onUnauthorized'),
+      onSessionExpired: () async => demoNetworkEvents.add('onSessionExpired'),
+      onUserBanned: (message) async =>
+          demoNetworkEvents.add('onUserBanned: $message'),
+      onError: (message) => demoNetworkEvents.add('onError: $message'),
+    ),
+    cacheConfig: const CacheConfig(defaultTtl: Duration(minutes: 2)),
+    // AppSetup already logs errors. Passing onError keeps the demo usable
+    // (forms etc.) if a platform feature is missing.
+    onError: (_, _) {},
+    app: const FormsDemoApp(),
+  );
 }
 
-/// Root demo app. Rebuilds when [AppThemeController] changes the theme mode.
+/// Root demo app. [ServicesApp] applies the theme config, the saved theme
+/// mode and accent colour, and rebuilds when they change.
 class FormsDemoApp extends StatelessWidget {
   /// Creates the demo app.
   const FormsDemoApp({super.key});
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: AppThemeController.instance,
-    builder: (context, _) => MaterialApp(
-      title: 'services_rj demo',
-      debugShowCheckedModeBanner: false,
-      themeMode: AppThemeController.instance.themeMode,
-      theme: AppThemeManager.lightTheme(
-        const AppThemeConfig(seedColor: Colors.teal),
-      ),
-      darkTheme: AppThemeManager.darkTheme(
-        const AppThemeConfig(seedColor: Colors.teal),
-      ),
-      home: const DemoHome(),
-    ),
-  );
+  Widget build(BuildContext context) =>
+      const ServicesApp(title: 'services_rj demo', home: DemoHome());
 }
 
 void _open(BuildContext context, Widget page) =>

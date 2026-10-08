@@ -148,6 +148,7 @@ const Map<String, dynamic> validatorsLabForm = {
       'type': 'multiselect',
       'id': 'topics',
       'label': 'Pick two or three topics',
+      'required': true,
       'options': [
         {'label': 'Testing', 'value': 'testing'},
         {'label': 'Tooling', 'value': 'tooling'},
