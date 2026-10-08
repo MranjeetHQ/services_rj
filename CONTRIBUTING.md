@@ -55,3 +55,12 @@ Also add a line to `CHANGELOG.md`.
 Open an issue with the Flutter version (`flutter --version`), the package version, a minimal JSON form or code that reproduces it, and what you expected. For security problems, see [SECURITY.md](SECURITY.md) instead.
 
 By contributing you agree your work is released under the [MIT License](LICENSE).
+
+## Releasing (maintainer)
+
+1. Bump `version` in `pubspec.yaml`, add the entry to `CHANGELOG.md` and update `RELEASE_NOTES.md`.
+2. Merge to `master` once CI is green.
+3. Tag and push: `git tag v1.2.0 && git push origin v1.2.0`.
+4. The "Publish to pub.dev" workflow checks the tag matches the version, re-runs the checks, waits for approval of the `pub.dev` environment, publishes, and creates the GitHub release.
+
+One-time setup is on pub.dev (package Admin tab, Automated publishing): enable publishing from GitHub Actions for `MranjeetHQ/services_rj` with the tag pattern `v{{version}}`.
