@@ -13,6 +13,7 @@ import '../permissions/app_permission_manager.dart';
 import 'app_connectivity.dart';
 import 'app_features.dart';
 import 'app_logger.dart';
+import 'app_theme_config.dart';
 import 'app_theme_controller.dart';
 import 'security/app_encryption.dart';
 import 'shared_pref_manager.dart';
@@ -62,12 +63,16 @@ class AppController extends ChangeNotifier {
   ///
   /// * [apiConfig] is required for the network and cache features. When it
   ///   is missing those features are skipped with a warning.
+  /// * [themeConfig] styles the app (see `ServicesApp`). It applies even
+  ///   when the theme feature is off; that feature adds the
+  ///   [AppController.theme] accessor.
   /// * [encryptionKeyProvider] replaces the default keystore-backed key.
   ///   If the key cannot be loaded, initialization fails instead of
   ///   silently storing data unencrypted.
   static Future<void> initialize({
     AppFeatures features = const AppFeatures(),
     ApiConfig? apiConfig,
+    AppThemeConfig? themeConfig,
     CacheConfig cacheConfig = const CacheConfig(),
     EncryptionKeyProvider? encryptionKeyProvider,
     @visibleForTesting Directory? cacheDirectory,
@@ -75,6 +80,7 @@ class AppController extends ChangeNotifier {
     return instance._initialize(
       features: features,
       apiConfig: apiConfig,
+      themeConfig: themeConfig,
       cacheConfig: cacheConfig,
       encryptionKeyProvider: encryptionKeyProvider,
       cacheDirectory: cacheDirectory,
@@ -84,6 +90,7 @@ class AppController extends ChangeNotifier {
   Future<void> _initialize({
     required AppFeatures features,
     required ApiConfig? apiConfig,
+    required AppThemeConfig? themeConfig,
     required CacheConfig cacheConfig,
     required EncryptionKeyProvider? encryptionKeyProvider,
     required Directory? cacheDirectory,
@@ -120,8 +127,10 @@ class AppController extends ChangeNotifier {
           'Theme is enabled without sharedPref: theme mode will not be saved.',
         );
       }
-      await AppThemeController.instance.initialize();
+      await AppThemeController.instance.initialize(config: themeConfig);
       _ready.add(AppFeature.theme);
+    } else if (themeConfig != null) {
+      await AppThemeController.instance.initialize(config: themeConfig);
     }
 
     if (features.connectivity) {
@@ -309,6 +318,7 @@ class AppController extends ChangeNotifier {
     _apiConfig = null;
     ApiCacheManager.instance.reset();
     AppEncryption.instance.reset();
+    AppThemeController.instance.resetForTest();
     AppConnectivity.stopMonitoring();
   }
 

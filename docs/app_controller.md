@@ -10,6 +10,8 @@ await AppController.initialize(
 );
 ```
 
+Pass `themeConfig: AppThemeConfig(...)` to style the app; `ServicesApp` (or `AppThemeController.instance.lightTheme` / `darkTheme`) applies it. It applies even with the `theme` feature off; that feature adds the `app.theme` accessor. To start everything in one call, with error handlers, orientation and your own setup, use `AppSetup.run` (see the README or [FEATURES.md](../FEATURES.md)).
+
 Networking is optional. Add `network: true` and an `ApiConfig` only when making API requests; without a config the network feature stays unready and other enabled features continue initializing.
 
 | Feature | What it controls | Can change at runtime |

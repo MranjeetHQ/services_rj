@@ -1,3 +1,16 @@
+## Unreleased
+
+* **App setup**: `AppSetup.run` starts an app in one call (binding, `onError` for framework and uncaught async errors, `orientations`, `systemUiOverlayStyle`, `AppController.initialize`, `beforeRun`, `runApp`). A setup failure goes to `onError` and the app still starts.
+* **ServicesApp**: a `MaterialApp` (and `ServicesApp.router`) that follows `AppThemeController`, attaches `AppKeys` and hides the debug banner.
+* **AppKeys**: global `navigatorKey` and `scaffoldMessengerKey` with `navigator`, `messenger` and `context` getters.
+* **Theme config**: `initialThemeMode`, `lightColorScheme` / `darkColorScheme`, `textTheme`, `visualDensity`, `appBarCenterTitle`, `appBarElevation`, `inputFilled`, `extensions` (`ThemeExtension`s), `customize` hook and `copyWith`. `AppThemeManager.theme(config, brightness)` builds either theme; light and dark now share one builder.
+* **Theme controller**: holds the config (`AppController.initialize(themeConfig:)`, `setConfig`), builds cached `lightTheme` / `darkTheme`, saves a user accent colour (`setSeedColor`, `seedColor`, `hasCustomSeedColor`; new `SharedPrefKeys.themeSeedColor`) and `resetToDefaults()`. Without a saved mode the controller now starts in `initialThemeMode`.
+* **Widgets**: `ThemeModeSelector` (Light / System / Dark) and `ThemeColorPicker` (accent swatches).
+* **String extensions** (`AppStringExtensions`, `AppNullableStringExtensions`): `isBlank`, `isEmail`, `isPhone`, `isUrl`, `isNumeric`, `isAlphabetic`, `isAlphanumeric`, `equalsIgnoreCase`, `toIntOrNull`, `toDoubleOrNull`, `toBool`, `capitalize`, `toTitleCase`, `toCamelCase`, `toSnakeCase`, `toKebabCase`, `removeWhitespace`, `collapseWhitespace`, `onlyDigits`, `reverse`, `truncate`, `mask`, `initials`; `isNullOrEmpty`, `isNullOrBlank`, `orEmpty`, `or` on `String?`. Character counts respect emoji and Indic scripts.
+* **Number extensions** (`AppDoubleExtensions`, `AppNullableDoubleExtensions`, `AppNumExtensions`): `roundTo`, `isWhole`, `toCleanString`, `orZero`, `withSeparators` (Western or Indian grouping), `toCurrency`, `toCompact` (K / M / B / T or K / L / Cr), `toPercent`, `isBetween`, and layout helpers `heightBox`, `widthBox`, `allInsets`, `horizontalInsets`, `verticalInsets`, `borderRadius`. Documented in `docs/extensions.md`, kept complete by a test.
+* **Example app**: new **App setup** page (`AppSetup.run` options, `ServicesApp`, `AppKeys` from plain functions, a theme settings screen) and **Extensions** page (every string and number extension on live input); the **Theme** page now covers every `AppThemeConfig` option, previews the `ThemeExtension` and `customize` hook, and can apply the config to the whole app.
+* **Docs**: `FEATURES.md` lists every feature, the extension points and a prioritized roadmap. The README quick start uses `AppSetup.run` and `ServicesApp`, kept identical to `example/lib/app_setup_start.dart` by a test.
+
 ## 1.2.0
 
 * **Dynamic forms**: JSON-driven form builder (`DynamicForm`, `DynamicFormController`) with 54 field types, validation, conditional logic, multi-step wizards, edit mode, dirty tracking, theming and six built-in languages. Based on json_form_engine by Rupesh Rajak (MIT, see `THIRD_PARTY_NOTICES.md`). Also available alone through `package:services_rj/forms.dart`.

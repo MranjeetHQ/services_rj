@@ -5,33 +5,62 @@ import 'app_theme_config.dart';
 class AppThemeManager {
   AppThemeManager._();
 
-  static ThemeData lightTheme(AppThemeConfig config) {
+  static ThemeData lightTheme(AppThemeConfig config) =>
+      theme(config, Brightness.light);
+
+  static ThemeData darkTheme(AppThemeConfig config) =>
+      theme(config, Brightness.dark);
+
+  /// The theme for [brightness]. [lightTheme] and [darkTheme] call this.
+  static ThemeData theme(AppThemeConfig config, Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    final schemeOverride = isDark
+        ? config.darkColorScheme
+        : config.lightColorScheme;
+    final scaffoldColor = isDark
+        ? config.darkScaffoldColor
+        : config.lightScaffoldColor;
+    final backgroundColor = isDark
+        ? config.darkBackgroundColor
+        : config.lightBackgroundColor;
+    final surfaceColor = isDark
+        ? config.darkSurfaceColor
+        : config.lightSurfaceColor;
+
     final base = ThemeData(
-      brightness: Brightness.light,
+      brightness: schemeOverride == null ? brightness : null,
       useMaterial3: config.useMaterial3,
-      colorSchemeSeed: config.seedColor,
+      colorScheme: schemeOverride,
+      colorSchemeSeed: schemeOverride == null ? config.seedColor : null,
       fontFamily: config.fontFamily,
-      scaffoldBackgroundColor: config.lightScaffoldColor,
+      scaffoldBackgroundColor: scaffoldColor,
+      visualDensity: config.visualDensity,
+      extensions: config.extensions,
     );
 
     final colorScheme = base.colorScheme;
+    final radius = BorderRadius.circular(config.borderRadius);
 
-    return base.copyWith(
+    final themed = base.copyWith(
+      textTheme: config.textTheme == null
+          ? null
+          : base.textTheme.merge(config.textTheme),
+
       // ── Canvas / background ──────────────────────────────────────────────
-      canvasColor: config.lightBackgroundColor ?? colorScheme.surface,
-      cardColor: config.lightSurfaceColor ?? colorScheme.surface,
+      canvasColor: backgroundColor ?? colorScheme.surface,
+      cardColor: surfaceColor ?? colorScheme.surface,
 
       // ── AppBar ───────────────────────────────────────────────────────────
       appBarTheme: AppBarTheme(
-        backgroundColor: config.lightScaffoldColor ?? colorScheme.surface,
+        backgroundColor: scaffoldColor ?? colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
-        elevation: 0,
-        centerTitle: true,
+        elevation: config.appBarElevation,
+        centerTitle: config.appBarCenterTitle,
       ),
 
       // ── Bottom Navigation ────────────────────────────────────────────────
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: config.lightSurfaceColor ?? colorScheme.surface,
+        backgroundColor: surfaceColor ?? colorScheme.surface,
         selectedItemColor: colorScheme.primary,
         unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
         type: BottomNavigationBarType.fixed,
@@ -40,7 +69,7 @@ class AppThemeManager {
 
       // ── Card ────────────────────────────────────────────────────────────
       cardTheme: CardThemeData(
-        color: config.lightSurfaceColor ?? colorScheme.surface,
+        color: surfaceColor ?? colorScheme.surface,
         elevation: 1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(config.effectiveCardRadius),
@@ -52,9 +81,7 @@ class AppThemeManager {
         style: ElevatedButton.styleFrom(
           elevation: config.elevatedButtonElevation,
           textStyle: config.elevatedButtonTextStyle,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(config.borderRadius),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: radius),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         ),
       ),
@@ -67,9 +94,7 @@ class AppThemeManager {
             width: config.outlinedButtonSideWidth ?? 1.5,
           ),
           textStyle: config.outlinedButtonTextStyle,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(config.borderRadius),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: radius),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         ),
       ),
@@ -78,9 +103,7 @@ class AppThemeManager {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           textStyle: config.textButtonTextStyle,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(config.borderRadius),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: radius),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         ),
       ),
@@ -93,17 +116,15 @@ class AppThemeManager {
 
       // ── Input Decoration ────────────────────────────────────────────────
       inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: config.lightSurfaceColor ?? colorScheme.surface,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(config.borderRadius),
-        ),
+        filled: config.inputFilled,
+        fillColor: surfaceColor ?? colorScheme.surface,
+        border: OutlineInputBorder(borderRadius: radius),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(config.borderRadius),
+          borderRadius: radius,
           borderSide: BorderSide(color: colorScheme.outline),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(config.borderRadius),
+          borderRadius: radius,
           borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(
@@ -114,140 +135,15 @@ class AppThemeManager {
 
       // ── Chip ────────────────────────────────────────────────────────────
       chipTheme: ChipThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(config.borderRadius),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: radius),
       ),
 
       // ── Dialog ──────────────────────────────────────────────────────────
       dialogTheme: DialogThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(config.borderRadius),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: radius),
       ),
     );
-  }
 
-  static ThemeData darkTheme(AppThemeConfig config) {
-    final base = ThemeData(
-      brightness: Brightness.dark,
-      useMaterial3: config.useMaterial3,
-      colorSchemeSeed: config.seedColor,
-      fontFamily: config.fontFamily,
-      scaffoldBackgroundColor: config.darkScaffoldColor,
-    );
-
-    final colorScheme = base.colorScheme;
-
-    return base.copyWith(
-      // ── Canvas / background ──────────────────────────────────────────────
-      canvasColor: config.darkBackgroundColor ?? colorScheme.surface,
-      cardColor: config.darkSurfaceColor ?? colorScheme.surface,
-
-      // ── AppBar ───────────────────────────────────────────────────────────
-      appBarTheme: AppBarTheme(
-        backgroundColor: config.darkScaffoldColor ?? colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
-        elevation: 0,
-        centerTitle: true,
-      ),
-
-      // ── Bottom Navigation ────────────────────────────────────────────────
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: config.darkSurfaceColor ?? colorScheme.surface,
-        selectedItemColor: colorScheme.primary,
-        unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
-        type: BottomNavigationBarType.fixed,
-        elevation: 8,
-      ),
-
-      // ── Card ────────────────────────────────────────────────────────────
-      cardTheme: CardThemeData(
-        color: config.darkSurfaceColor ?? colorScheme.surface,
-        elevation: 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(config.effectiveCardRadius),
-        ),
-      ),
-
-      // ── Elevated Button ─────────────────────────────────────────────────
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          elevation: config.elevatedButtonElevation,
-          textStyle: config.elevatedButtonTextStyle,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(config.borderRadius),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-        ),
-      ),
-
-      // ── Outlined Button ─────────────────────────────────────────────────
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(
-            color: config.outlinedButtonSideColor ?? colorScheme.primary,
-            width: config.outlinedButtonSideWidth ?? 1.5,
-          ),
-          textStyle: config.outlinedButtonTextStyle,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(config.borderRadius),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-        ),
-      ),
-
-      // ── Text Button ─────────────────────────────────────────────────────
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          textStyle: config.textButtonTextStyle,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(config.borderRadius),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-        ),
-      ),
-
-      // ── Icon Theme ──────────────────────────────────────────────────────
-      iconTheme: IconThemeData(
-        color: config.iconThemeColor ?? colorScheme.onSurface,
-        size: 24,
-      ),
-
-      // ── Input Decoration ────────────────────────────────────────────────
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: config.darkSurfaceColor ?? colorScheme.surface,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(config.borderRadius),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(config.borderRadius),
-          borderSide: BorderSide(color: colorScheme.outline),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(config.borderRadius),
-          borderSide: BorderSide(color: colorScheme.primary, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-      ),
-
-      // ── Chip ────────────────────────────────────────────────────────────
-      chipTheme: ChipThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(config.borderRadius),
-        ),
-      ),
-
-      // ── Dialog ──────────────────────────────────────────────────────────
-      dialogTheme: DialogThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(config.borderRadius),
-        ),
-      ),
-    );
+    return config.customize?.call(themed, brightness) ?? themed;
   }
 }

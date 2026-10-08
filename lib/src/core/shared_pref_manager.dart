@@ -319,4 +319,5 @@ abstract final class SharedPrefKeys {
   static const String fullName = "FULL_NAME";
   static const String isDemoUser = "IS_DEMO_USER";
   static const String themeMode = 'theme_mode';
+  static const String themeSeedColor = 'theme_seed_color';
 }

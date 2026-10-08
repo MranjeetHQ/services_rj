@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:services_rj/services_rj.dart';
+import 'package:services_rj_example/demos/core/app_setup_demo.dart';
+import 'package:services_rj_example/demos/core/core_common.dart';
 import 'package:services_rj_example/demos/core_demos.dart';
 import 'package:services_rj_example/demos/core/theme_demo.dart';
 // Test-only: the package under demo depends on it and tests need its mock.
@@ -37,9 +39,9 @@ void main() {
       });
     }
 
-    test('exposes eight entries with unique titles', () {
-      expect(coreDemos.length, 8);
-      expect(coreDemos.map((e) => e.title).toSet().length, 8);
+    test('exposes ten entries with unique titles', () {
+      expect(coreDemos.length, 10);
+      expect(coreDemos.map((e) => e.title).toSet().length, 10);
     });
   });
 
@@ -290,12 +292,74 @@ void main() {
       );
       final toggle = find.text('toggleTheme()');
       await tester.ensureVisible(toggle);
+      await tester.pumpAndSettle();
       await tester.tap(toggle);
       await tester.pump();
       expect(AppThemeController.instance.isDarkMode, isTrue);
       await tester.tap(toggle);
       await tester.pump();
       expect(AppThemeController.instance.isLightMode, isTrue);
+    });
+
+    testWidgets('theme settings widgets change mode and accent', (
+      tester,
+    ) async {
+      addTearDown(AppThemeController.instance.resetToDefaults);
+      await pumpPage(
+        tester,
+        Builder(builder: (c) => entryPage(c, 'Theme')),
+        size: const Size(900, 3000),
+      );
+      final dark = find.descendant(
+        of: find.byType(ThemeModeSelector),
+        matching: find.text('Dark'),
+      );
+      await tester.ensureVisible(dark);
+      await tester.pumpAndSettle();
+      await tester.tap(dark);
+      await tester.pump();
+      expect(AppThemeController.instance.isDarkMode, isTrue);
+
+      await tester.tap(find.bySemanticsLabel('#e91e63')); // Colors.pink
+      await tester.pump();
+      expect(AppThemeController.instance.hasCustomSeedColor, isTrue);
+
+      await tester.tap(find.text('resetToDefaults()'));
+      await tester.pump();
+      expect(AppThemeController.instance.isSystemMode, isTrue);
+      expect(AppThemeController.instance.hasCustomSeedColor, isFalse);
+    });
+
+    testWidgets('new options preview and apply to the whole app', (
+      tester,
+    ) async {
+      final original = AppThemeController.instance.config;
+      addTearDown(() => AppThemeController.instance.setConfig(original));
+      await pumpPage(
+        tester,
+        Builder(builder: (c) => entryPage(c, 'Theme')),
+        size: const Size(900, 5000),
+      );
+      expect(find.text('ThemeExtension badge'), findsNWidgets(2));
+
+      await tester.tap(find.text('appBarCenterTitle'));
+      await tester.tap(find.text('customize: thick primary dividers'));
+      await tester.pump();
+      final panes = tester
+          .widgetList<ThemePreviewPane>(find.byType(ThemePreviewPane))
+          .toList();
+      expect(panes[0].data.appBarTheme.centerTitle, isFalse);
+      expect(panes[0].data.dividerTheme.thickness, 3);
+      expect(panes[0].data.extension<DemoBrand>(), isNotNull);
+
+      await tester.tap(find.text('Apply to whole app'));
+      await tester.pump();
+      expect(AppThemeController.instance.config.appBarCenterTitle, isFalse);
+      expect(AppThemeController.instance.config.customize, isNotNull);
+
+      await tester.tap(find.text('Restore app config'));
+      await tester.pump();
+      expect(AppThemeController.instance.config, same(original));
     });
 
     test('config maps to ThemeData', () {
@@ -309,6 +373,130 @@ void main() {
       expect(light.brightness, Brightness.light);
       expect(dark.brightness, Brightness.dark);
       expect(config.effectiveCardRadius, 20);
+    });
+  });
+
+  group('App setup', () {
+    Future<void> pumpInServicesApp(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(900, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      addTearDown(AppThemeController.instance.resetToDefaults);
+      await tester.pumpWidget(const ServicesApp(home: AppSetupDemo()));
+      await tester.pump();
+    }
+
+    testWidgets('without ServicesApp the keys report not attached', (
+      tester,
+    ) async {
+      await pumpPage(
+        tester,
+        Builder(builder: (c) => entryPage(c, 'App setup')),
+        size: const Size(900, 3000),
+      );
+      expect(find.text('Not inside a ServicesApp'), findsOneWidget);
+      await tester.tap(find.text('Snackbar via messenger'));
+      await tester.pump();
+      expect(find.textContaining('not attached'), findsWidgets);
+    });
+
+    testWidgets('AppKeys reach the UI from plain functions', (tester) async {
+      await pumpInServicesApp(tester);
+      expect(find.text('This page runs inside a ServicesApp'), findsOneWidget);
+      expect(find.text('Keys attached'), findsOneWidget);
+
+      await tester.tap(find.text('Snackbar via messenger'));
+      await tester.pump();
+      expect(find.text('Profile saved (from a service)'), findsOneWidget);
+
+      await tester.tap(find.text('Dialog via context'));
+      await tester.pumpAndSettle();
+      expect(find.text('Session expiring'), findsOneWidget);
+      await tester.tap(find.text('Stay signed in'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('stay signed in: true'), findsOneWidget);
+
+      await tester.tap(find.text('Push via navigator'));
+      await tester.pumpAndSettle();
+      expect(find.text('Pushed by AppKeys'), findsOneWidget);
+    });
+
+    testWidgets('settings screen changes mode and resets', (tester) async {
+      await pumpInServicesApp(tester);
+      await tester.tap(find.text('Dark'));
+      await tester.pumpAndSettle();
+      expect(AppThemeController.instance.isDarkMode, isTrue);
+      await tester.tap(find.text('Reset theme settings'));
+      await tester.pumpAndSettle();
+      expect(AppThemeController.instance.isSystemMode, isTrue);
+    });
+  });
+
+  group('Extensions', () {
+    String row(WidgetTester tester, String label) => tester
+        .widgetList<KeyValueRow>(find.byType(KeyValueRow))
+        .firstWhere((r) => r.label == label)
+        .value;
+
+    Future<void> open(WidgetTester tester) => pumpPage(
+      tester,
+      Builder(builder: (c) => entryPage(c, 'Extensions')),
+      size: const Size(900, 5000),
+    );
+
+    testWidgets('string rows follow the input', (tester) async {
+      await open(tester);
+      expect(row(tester, 'isEmail'), 'true');
+      expect(row(tester, 'isPhone'), 'false');
+
+      await tester.enterText(find.byType(TextField).first, 'user_name id');
+      await tester.pump();
+      expect(row(tester, 'toCamelCase()'), 'userNameId');
+      expect(row(tester, 'toSnakeCase()'), 'user_name_id');
+      expect(row(tester, 'initials'), 'UI');
+      expect(row(tester, 'truncate(10)'), 'user_name…');
+
+      await tester.tap(find.text('+91 98765-43210'));
+      await tester.pump();
+      expect(row(tester, 'isPhone'), 'true');
+      expect(row(tester, 'onlyDigits()'), '919876543210');
+      expect(
+        row(tester, 'mask(visibleStart: 0, visibleEnd: 4)'),
+        '•••••••••••3210',
+      );
+    });
+
+    testWidgets('nullable rows', (tester) async {
+      await open(tester);
+      await tester.tap(find.text('Value is null'));
+      await tester.pump();
+      expect(row(tester, 'isNullOrEmpty'), 'true');
+      expect(row(tester, "or('Guest')"), 'Guest');
+    });
+
+    testWidgets('number rows follow input, decimals and grouping', (
+      tester,
+    ) async {
+      await open(tester);
+      expect(row(tester, 'withSeparators'), '1,234,567.89');
+      expect(row(tester, "toCurrency('₹')"), '₹1,234,567.89');
+      expect(row(tester, 'toCompact'), '1.23M');
+
+      await tester.tap(find.text('Indian grouping (lakh / crore)'));
+      await tester.pump();
+      expect(row(tester, 'withSeparators'), '12,34,567.89');
+      expect(row(tester, 'toCompact'), '12.35L');
+
+      await tester.tap(find.text(r'$'));
+      await tester.enterText(find.byType(TextField).at(1), '-20');
+      await tester.pump();
+      expect(row(tester, r"toCurrency('$')"), r'-$20.00');
+
+      await tester.enterText(find.byType(TextField).at(1), 'abc');
+      await tester.pump();
+      expect(row(tester, 'orZero'), '0.0');
+      expect(find.textContaining('Not a number'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   });
 

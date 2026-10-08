@@ -56,53 +56,17 @@ flutter pub get
 # Initialize Package
 
 ```dart
-void main() async {
-  await AppInitializer.initialize();
-
-  runApp(const MyApp());
-}
+Future<void> main() => AppSetup.run(
+  features: const AppFeatures(sharedPref: true, theme: true),
+  themeConfig: const AppThemeConfig(
+    seedColor: Colors.deepPurple,
+    borderRadius: 16,
+  ),
+  app: const ServicesApp(home: HomePage()),
+);
 ```
 
----
-
-# MaterialApp Setup
-
-```dart
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: AppThemeController.instance,
-      builder: (_, __) {
-        const config = AppThemeConfig(
-          seedColor: Colors.deepPurple,
-          borderRadius: 16,
-        );
-
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-
-          theme: AppThemeManager.lightTheme(
-            config,
-          ),
-
-          darkTheme: AppThemeManager.darkTheme(
-            config,
-          ),
-
-          themeMode:
-              AppThemeController.instance
-                  .themeMode,
-
-          home: const HomePage(),
-        );
-      },
-    );
-  }
-}
-```
+`ServicesApp` is a `MaterialApp` that applies the theme config, the saved theme mode and the user's accent colour, and rebuilds when they change. The full setup is in the README and [FEATURES.md](../FEATURES.md).
 
 ---
 
@@ -144,6 +108,16 @@ const config = AppThemeConfig(
 | fontFamily | Global font family |
 | lightScaffoldColor | Scaffold color for light mode |
 | darkScaffoldColor | Scaffold color for dark mode |
+| initialThemeMode | Theme mode on first launch |
+| lightColorScheme / darkColorScheme | Exact colour schemes instead of the seed |
+| customize | Hook to change anything else on the generated themes |
+
+## Theme Settings Widgets
+
+```dart
+const ThemeModeSelector()   // Light / System / Dark
+const ThemeColorPicker()    // accent colour, saved
+```
 
 ---
 
@@ -259,17 +233,20 @@ AppResponsive.isDesktop(context)
 
 ```dart
 context.theme
-
 context.colors
-
-context.textTheme
-
 context.isDarkMode
 
-context.screenWidth
+'user_name'.toCamelCase()     // userName
+'9876543210'.mask()           // ••••••3210
+name.or('Guest')
 
-context.screenHeight
+3.14159.roundTo(2)            // 3.14
+1499.5.toCurrency('₹')        // ₹1,499.50
+1250.toCompact()              // 1.3K
+16.heightBox                  // SizedBox(height: 16)
 ```
+
+Full list: [extensions.md](extensions.md).
 
 ---
 
@@ -375,14 +352,7 @@ lib/
 
 # Future Roadmap
 
-- Localization Manager
-- Dynamic Runtime Themes
-- App Router Helpers
-- BottomSheet Utilities
-- Secure Storage Support
-- Reusable UI Components
-- API Interceptors
-- Logging Dashboard
+The current feature list and the prioritized roadmap are kept in [FEATURES.md](../FEATURES.md).
 
 ---
 

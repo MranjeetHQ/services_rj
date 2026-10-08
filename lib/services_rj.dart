@@ -4,6 +4,8 @@ library;
 export 'src/core/app_controller.dart';
 export 'src/core/app_features.dart';
 export 'src/core/app_initializer.dart';
+export 'src/core/app_keys.dart';
+export 'src/core/app_setup.dart';
 
 // Storage & security
 export 'src/core/shared_pref_manager.dart';
@@ -16,6 +18,8 @@ export 'src/core/app_theme_controller.dart';
 
 // Helpers
 export 'src/core/app_extensions.dart';
+export 'src/core/app_number_extensions.dart';
+export 'src/core/app_string_extensions.dart';
 export 'src/core/app_logger.dart';
 export 'src/core/app_snackbar.dart';
 export 'src/core/app_dialogs.dart';
@@ -63,4 +67,6 @@ export 'forms.dart';
 export 'src/widgets/app_buttons.dart';
 export 'src/widgets/app_scaffold.dart';
 export 'src/widgets/primary_loader.dart';
+export 'src/widgets/services_app.dart';
 export 'src/widgets/theme_mode_switcher.dart';
+export 'src/widgets/theme_settings.dart';
